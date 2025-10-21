@@ -8,6 +8,9 @@ public partial struct PlaneMovementSystem : ISystem
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
+        float3 sphereCenter = new float3(0, 0, 0);
+        float sphereRadius = 25.0f;
+        
         var dt = SystemAPI.Time.DeltaTime;
 
         foreach (var (transform, entity) in
@@ -28,11 +31,19 @@ public partial struct PlaneMovementSystem : ISystem
             math.sincos(angle, out dir.x, out dir.z);
             
             // PLANE
-            transform.ValueRW.Position += dir * dt * 5.0f;
-            transform.ValueRW.Rotation = quaternion.RotateY(angle);
+            // transform.ValueRW.Position += dir * dt * 5.0f;
+            // transform.ValueRW.Rotation = quaternion.RotateY(angle);
             
-            // TODO SPHERE INSTEAD
-            transform.ValueRW.Position.y = 30f;
+            // SPHERE
+            float3 currentPos = transform.ValueRO.Position;
+            float3 currentSurfacePos = sphereCenter + math.normalize(currentPos - sphereCenter) * sphereRadius;
+            float3 newPos = currentSurfacePos + dir * dt * 5.0f;
+            float3 newSurfacePos = sphereCenter + math.normalize(newPos - sphereCenter) * sphereRadius;
+            
+            transform.ValueRW.Position = newSurfacePos;
+            
+            // TODO figure out angle on sphere surface
+            transform.ValueRW.Rotation = quaternion.RotateY(angle);
         }
     }
 }

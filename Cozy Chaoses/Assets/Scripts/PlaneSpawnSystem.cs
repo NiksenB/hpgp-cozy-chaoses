@@ -21,7 +21,7 @@ public partial struct PlaneSpawnSystem : ISystem
         {
             return; 
         } 
-        timer = 0.3f;   // reset timer
+        timer = 1.5f;   // reset timer
 
         var config = SystemAPI.GetSingleton<Config>();
         

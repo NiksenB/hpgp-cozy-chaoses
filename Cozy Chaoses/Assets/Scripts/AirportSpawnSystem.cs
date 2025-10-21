@@ -19,6 +19,9 @@ public partial struct AirportSpawnSystem : ISystem
         // Disable in first update, so it updates only once
         state.Enabled = false;
 
+        float3 sphereCenter = new float3(0, 0, 0);
+        float sphereRadius = 25.0f;
+        
         var config = SystemAPI.GetSingleton<Config>();
 
         var random = new Random(72);
@@ -34,15 +37,15 @@ public partial struct AirportSpawnSystem : ISystem
             
             state.EntityManager.SetComponentData(airportEntity, color);    
             
-            // Below is not from tutorial
-            float3 position = new float3(
+            float3 newPos = new float3(
                 random.NextFloat(-100f, 100f),
                 random.NextFloat(-100f, 100f),
                 random.NextFloat(-100f, 100f)
             );
             
-            var transform = state.EntityManager.GetComponentData<LocalTransform>(airportEntity);
-            transform.Position = position;
+            float3 newSurfacePos = sphereCenter + math.normalize(newPos - sphereCenter) * sphereRadius;
+            LocalTransform transform = LocalTransform.FromPosition(newSurfacePos);
+            
             state.EntityManager.SetComponentData(airportEntity, transform);
         }
     }
