@@ -17,6 +17,7 @@ public partial struct PlaneMovementSystem : ISystem
         {
             var pos = transform.ValueRO.Position;
             
+            // Tanks turotial note:
             // This does not modify the actual position of the plane, only the point at
             // which we sample the 3D noise function. This way, every plane is using a
             // different slice and will move along its own different random flow field.
@@ -26,8 +27,12 @@ public partial struct PlaneMovementSystem : ISystem
             var dir = float3.zero;
             math.sincos(angle, out dir.x, out dir.z);
             
+            // PLANE
             transform.ValueRW.Position += dir * dt * 5.0f;
             transform.ValueRW.Rotation = quaternion.RotateY(angle);
+            
+            // TODO SPHERE INSTEAD
+            transform.ValueRW.Position.y = 30f;
         }
     }
 }
