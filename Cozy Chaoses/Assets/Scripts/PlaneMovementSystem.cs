@@ -2,6 +2,7 @@ using Unity.Burst;
 using Unity.Mathematics;
 using Unity.Transforms;
 using Unity.Entities;
+using UnityEngine;
 
 public partial struct PlaneMovementSystem : ISystem
 {
@@ -19,31 +20,30 @@ public partial struct PlaneMovementSystem : ISystem
                      .WithEntityAccess())
         {
             var pos = transform.ValueRO.Position;
-            
+
             // Tanks turotial note:
             // This does not modify the actual position of the plane, only the point at
             // which we sample the 3D noise function. This way, every plane is using a
             // different slice and will move along its own different random flow field.
             pos.y = (float)entity.Index;
-            
+
             var angle = (0.5f + noise.cnoise(pos / 10f)) * 4.0f * math.PI;
             var dir = float3.zero;
             math.sincos(angle, out dir.x, out dir.z);
-            
+
             // PLANE
             // transform.ValueRW.Position += dir * dt * 5.0f;
             // transform.ValueRW.Rotation = quaternion.RotateY(angle);
-            
+
             // SPHERE
             float3 currentPos = transform.ValueRO.Position;
-            float3 currentSurfacePos = sphereCenter + math.normalize(currentPos - sphereCenter) * sphereRadius;
+            float3 currentSurfacePos = sphereCenter + math.normalize(currentPos - sphereCenter) * (sphereRadius + 5f);
             float3 newPos = currentSurfacePos + dir * dt * 5.0f;
             float3 newSurfacePos = sphereCenter + math.normalize(newPos - sphereCenter) * sphereRadius;
-            
             transform.ValueRW.Position = newSurfacePos;
             
-            // TODO figure out angle on sphere surface
-            transform.ValueRW.Rotation = quaternion.RotateY(angle);
+            var newRot = quaternion.LookRotation(math.normalize(newSurfacePos - currentPos), math.normalize(currentPos - sphereCenter));
+            transform.ValueRW.Rotation = newRot;
         }
     }
 }
