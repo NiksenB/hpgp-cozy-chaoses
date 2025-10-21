@@ -4,7 +4,9 @@ using Unity.Entities;
 public class ConfigAuthoring : MonoBehaviour
 {
     public GameObject PlanePrefab;
+    public GameObject AirportPrefab;
     public int PlaneCount;
+    public int AirportCount;
 
     class Baker : Baker<ConfigAuthoring>
     {
@@ -14,7 +16,9 @@ public class ConfigAuthoring : MonoBehaviour
             AddComponent(entity, new Config
             {
                 PlanePrefab = GetEntity(authoring.PlanePrefab, TransformUsageFlags.Dynamic),
-                PlaneCount = authoring.PlaneCount
+                AirportPrefab = GetEntity(authoring.AirportPrefab, TransformUsageFlags.Dynamic),
+                PlaneCount = authoring.PlaneCount,
+                AirportCount = authoring.AirportCount
             });
         }
     }
@@ -24,5 +28,7 @@ public class ConfigAuthoring : MonoBehaviour
 public struct Config : IComponentData
 {
     public Entity PlanePrefab;
+    public Entity AirportPrefab;
     public int PlaneCount;
+    public int AirportCount;
 }
