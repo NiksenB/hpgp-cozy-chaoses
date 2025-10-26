@@ -18,6 +18,7 @@ public partial struct PlaneMovementSystem : ISystem
     {
         float3 sphereCenter = new float3(0, 0, 0);
         float sphereRadius = 25.0f;
+        float speed = 5.0f;
         
         var dt = SystemAPI.Time.DeltaTime;
 
@@ -38,26 +39,24 @@ public partial struct PlaneMovementSystem : ISystem
             
             float3 toCenter = math.normalize(pos - sphereCenter);
             float3 toDest = math.normalize(dest - pos); 
+            
+            // NEW POSITION
             float3 surfaceTangent = math.normalize(toDest - toCenter * math.dot(toDest, toCenter));
+            
+            float3 rotationAxis = math.normalize(math.cross(toCenter, surfaceTangent));
+            float rotationAngle = dt * speed / (sphereRadius + 5f);
 
-            if (math.length(surfaceTangent) > 0.001f)
-            {
-                // NEW POSITION
-                float3 axis = math.normalize(math.cross(toCenter, surfaceTangent));
-                float rotationAngle = math.length(surfaceTangent) * dt * 5.0f / (sphereRadius + 5f);
-    
-                quaternion rot = quaternion.AxisAngle(axis, rotationAngle);
-                float3 newDirection = math.mul(rot, toCenter);
-                float3 newSurfacePos = sphereCenter + newDirection * (sphereRadius + 5.0f);
-    
-                transform.ValueRW.Position = newSurfacePos;
+            quaternion rot = quaternion.AxisAngle(rotationAxis, rotationAngle);
+            float3 newDirection = math.mul(rot, toCenter);
+            float3 newSurfacePos = sphereCenter + newDirection * (sphereRadius + 5.0f);
 
-                // NEW ROTATION
-                float3 forward = math.normalize(newSurfacePos - pos);
-                float3 up = math.normalize(pos - sphereCenter);
-                quaternion newRotation = quaternion.LookRotation(forward, up);
-                transform.ValueRW.Rotation = newRotation;
-            }
+            transform.ValueRW.Position = newSurfacePos;
+
+            // NEW ROTATION
+            float3 forward = math.normalize(newSurfacePos - pos);
+            float3 up = math.normalize(pos - sphereCenter);
+            quaternion newRotation = quaternion.LookRotation(forward, up);
+            transform.ValueRW.Rotation = newRotation;
         }
     }
 
