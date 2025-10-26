@@ -2,10 +2,17 @@ using Unity.Burst;
 using Unity.Mathematics;
 using Unity.Transforms;
 using Unity.Entities;
+using Unity.Rendering;
 using UnityEngine;
 
 public partial struct PlaneMovementSystem : ISystem
 {
+    [BurstCompile]
+    public void OnCreate(ref SystemState state)
+    {
+        state.RequireForUpdate<Config>();
+    }
+    
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
@@ -14,33 +21,55 @@ public partial struct PlaneMovementSystem : ISystem
         
         var dt = SystemAPI.Time.DeltaTime;
 
-        foreach (var (transform, entity) in
-                 SystemAPI.Query<RefRW<LocalTransform>>()
+        foreach (var (transform, color, entity) in
+                 SystemAPI.Query<RefRW<LocalTransform>, RefRW<URPMaterialPropertyBaseColor>>()
                      .WithAll<Plane>()
                      .WithEntityAccess())
         {
-            var pos = transform.ValueRO.Position;
+            // Tanks tutorial note: Modify the point at which we sample the 3D noise function.
+            var yPos = transform.ValueRO.Position;
+            yPos.y = (float)entity.Index;
+            
+            float3 dest = state.GetComponentLookup<Plane>()[entity].Dest;
+            float3 pos = transform.ValueRO.Position;
+            
+            // Placeholder for despawn behavior
+            ColorIfArrived(pos, dest, sphereCenter, color);
+            
+            float3 toCenter = math.normalize(pos - sphereCenter);
+            float3 toDest = math.normalize(dest - pos); 
+            float3 surfaceTangent = math.normalize(toDest - toCenter * math.dot(toDest, toCenter));
 
-            // Tanks tutorial note:
-            // This does not modify the actual position of the plane, only the point at
-            // which we sample the 3D noise function. This way, every plane is using a
-            // different slice and will move along its own different random flow field.
-            pos.y = (float)entity.Index;
+            if (math.length(surfaceTangent) > 0.001f)
+            {
+                // NEW POSITION
+                float3 axis = math.normalize(math.cross(toCenter, surfaceTangent));
+                float rotationAngle = math.length(surfaceTangent) * dt * 5.0f / (sphereRadius + 5f);
+    
+                quaternion rot = quaternion.AxisAngle(axis, rotationAngle);
+                float3 newDirection = math.mul(rot, toCenter);
+                float3 newSurfacePos = sphereCenter + newDirection * (sphereRadius + 5.0f);
+    
+                transform.ValueRW.Position = newSurfacePos;
 
-            var angle = (0.5f + noise.cnoise(pos / 10f)) * 4.0f * math.PI;
-            var dir = float3.zero;
-            math.sincos(angle, out dir.x, out dir.z);
+                // NEW ROTATION
+                float3 forward = math.normalize(newSurfacePos - pos);
+                float3 up = math.normalize(pos - sphereCenter);
+                quaternion newRotation = quaternion.LookRotation(forward, up);
+                transform.ValueRW.Rotation = newRotation;
+            }
+        }
+    }
 
-            float3 currentPos = transform.ValueRO.Position;
-            float3 currentSurfacePos = sphereCenter + math.normalize(currentPos - sphereCenter) * (sphereRadius + 5f);
-            float3 newPos = currentSurfacePos + dir * dt * 5.0f;
-            float3 newSurfacePos = sphereCenter + math.normalize(newPos - sphereCenter) * sphereRadius;
-            transform.ValueRW.Position = newSurfacePos;
-
-            float3 forward = math.normalize(newSurfacePos - currentPos);
-            float3 up = math.normalize(currentPos - sphereCenter);
-            quaternion newRotation = quaternion.LookRotation(forward, up);
-            transform.ValueRW.Rotation = newRotation;
+    private void ColorIfArrived(float3 pos, float3 dest, float3 sphereCenter, RefRW<URPMaterialPropertyBaseColor> color)
+    {
+        float3 currentDir = math.normalize(pos - sphereCenter); 
+        float3 destDir = math.normalize(dest - sphereCenter);
+            
+        if (math.dot(currentDir, destDir) > 0.999f) 
+        {
+            // despawn here
+            color.ValueRW.Value = new float4(0, 0, 0, 1); 
         }
     }
 }

@@ -1,9 +1,11 @@
 using Unity.Entities;
+using Unity.Mathematics;
 using UnityEngine;
 
 public class PlaneAuthoring : MonoBehaviour
 {
     public GameObject Wings;
+    public float3 Dest;
     
     class Baker : Baker<PlaneAuthoring>
     {
@@ -12,7 +14,8 @@ public class PlaneAuthoring : MonoBehaviour
             var entity = GetEntity(authoring, TransformUsageFlags.Dynamic);
             AddComponent(entity, new Plane
             {
-                Wings = GetEntity(authoring.Wings, TransformUsageFlags.Dynamic)
+                Wings = GetEntity(authoring.Wings, TransformUsageFlags.Dynamic),
+                Dest = authoring.Dest
             });
         }
     }
@@ -21,4 +24,5 @@ public class PlaneAuthoring : MonoBehaviour
 public struct Plane : IComponentData
 {
     public Entity Wings;
+    public float3 Dest;
 }
