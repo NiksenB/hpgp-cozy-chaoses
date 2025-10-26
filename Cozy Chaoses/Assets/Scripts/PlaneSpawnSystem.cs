@@ -1,16 +1,23 @@
-using UnityEngine;
 using Unity.Entities;
-using Unity.Entities.Graphics;
 using Unity.Burst;
+using Unity.Collections;
 using Unity.Mathematics;
 using Unity.Rendering;
 using Unity.Transforms;
-
 using Random = Unity.Mathematics.Random;
+
 [UpdateBefore(typeof(TransformSystemGroup))]
 public partial struct PlaneSpawnSystem : ISystem
 {
     private float timer;
+    private Random random;
+    
+    [BurstCompile]
+    public void OnCreate(ref SystemState state)
+    {
+        state.RequireForUpdate<Config>();
+        random = new Random(72);
+    }
     
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
@@ -32,11 +39,6 @@ public partial struct PlaneSpawnSystem : ISystem
         {
             Entity planeEntity = state.EntityManager.Instantiate(config.PlanePrefab);
             
-            // From Tank tutorial:
-            // Every root entity instantiated from a prefab has a LinkedEntityGroup component, which
-            // is a list of all the entities that make up the prefab hierarchy (including the root).
-            // (LinkedEntityGroup is a special kind of component called a "DynamicBuffer", which is
-            // a resizable array of struct values instead of just a single struct.)
             var linkedEntities = state.EntityManager.GetBuffer<LinkedEntityGroup>(planeEntity);
             foreach (var entity in linkedEntities)
             {
@@ -46,11 +48,20 @@ public partial struct PlaneSpawnSystem : ISystem
                 }
             }
             
+            // PLACEHOLDER DESTINATION
+            float3 r = new float3(
+                random.NextFloat(-100f, 100f),
+                random.NextFloat(-100f, 100f),
+                random.NextFloat(-100f, 100f)
+            );
+            float3 dest = float3.zero + math.normalize(r - float3.zero) * (25f + 5f);
+            
             planeTransform.Position =  airportTransform.ValueRO.Position;
             
             state.EntityManager.SetComponentData(planeEntity, planeTransform);
             state.EntityManager.SetComponentData(planeEntity, new Plane
             {
+                Dest = dest
             });
         }
     }

@@ -5,7 +5,6 @@ public class ConfigAuthoring : MonoBehaviour
 {
     public GameObject PlanePrefab;
     public GameObject AirportPrefab;
-    public int PlaneCount;
     public int AirportCount;
 
     class Baker : Baker<ConfigAuthoring>
@@ -17,7 +16,6 @@ public class ConfigAuthoring : MonoBehaviour
             {
                 PlanePrefab = GetEntity(authoring.PlanePrefab, TransformUsageFlags.Dynamic),
                 AirportPrefab = GetEntity(authoring.AirportPrefab, TransformUsageFlags.Dynamic),
-                PlaneCount = authoring.PlaneCount,
                 AirportCount = authoring.AirportCount
             });
         }
@@ -29,6 +27,5 @@ public struct Config : IComponentData
 {
     public Entity PlanePrefab;
     public Entity AirportPrefab;
-    public int PlaneCount;
     public int AirportCount;
 }
