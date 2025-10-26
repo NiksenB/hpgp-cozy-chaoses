@@ -16,8 +16,9 @@ public partial struct PlaneMovementSystem : ISystem
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
+        var config = SystemAPI.GetSingleton<Config>();
+        float sphereRadius = config.PlanetRadius;
         float3 sphereCenter = new float3(0, 0, 0);
-        float sphereRadius = 25.0f;
         float speed = 5.0f;
         
         var dt = SystemAPI.Time.DeltaTime;

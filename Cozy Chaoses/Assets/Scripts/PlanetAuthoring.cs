@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class PlanetAuthoring : MonoBehaviour
 {
-    public float radius = 50f;
+    public float radius = 25f;
     
     class Baker : Baker<PlanetAuthoring>
     {
