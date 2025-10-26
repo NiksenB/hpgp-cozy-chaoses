@@ -20,9 +20,9 @@ public partial struct AirportSpawnSystem : ISystem
         state.Enabled = false;
 
         float3 sphereCenter = new float3(0, 0, 0);
-        float sphereRadius = 25.0f;
         
         var config = SystemAPI.GetSingleton<Config>();
+        float sphereRadius = config.PlanetRadius;
 
         var random = new Random(72);
         
@@ -44,7 +44,7 @@ public partial struct AirportSpawnSystem : ISystem
             );
             
             float3 newSurfacePos = sphereCenter + math.normalize(newPos - sphereCenter) * sphereRadius;
-            LocalTransform transform = LocalTransform.FromPosition(newSurfacePos);
+            LocalTransform transform = LocalTransform.FromPosition(newSurfacePos).ApplyScale(10f);
             
             state.EntityManager.SetComponentData(airportEntity, transform);
         }

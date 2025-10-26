@@ -119,84 +119,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1001 &408565674
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 1607644553271017260, guid: 87d15d6908f46084882673c94d58fbb3, type: 3}
-      propertyPath: m_Name
-      value: Planet
-      objectReference: {fileID: 0}
-    - target: {fileID: 7066413823870839734, guid: 87d15d6908f46084882673c94d58fbb3, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7066413823870839734, guid: 87d15d6908f46084882673c94d58fbb3, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7066413823870839734, guid: 87d15d6908f46084882673c94d58fbb3, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7066413823870839734, guid: 87d15d6908f46084882673c94d58fbb3, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7066413823870839734, guid: 87d15d6908f46084882673c94d58fbb3, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7066413823870839734, guid: 87d15d6908f46084882673c94d58fbb3, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7066413823870839734, guid: 87d15d6908f46084882673c94d58fbb3, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7066413823870839734, guid: 87d15d6908f46084882673c94d58fbb3, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7066413823870839734, guid: 87d15d6908f46084882673c94d58fbb3, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7066413823870839734, guid: 87d15d6908f46084882673c94d58fbb3, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1607644553271017260, guid: 87d15d6908f46084882673c94d58fbb3, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1242517989}
-  m_SourcePrefab: {fileID: 100100000, guid: 87d15d6908f46084882673c94d58fbb3, type: 3}
---- !u!1 &1242517983 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1607644553271017260, guid: 87d15d6908f46084882673c94d58fbb3, type: 3}
-  m_PrefabInstance: {fileID: 408565674}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1242517989
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1242517983}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6c1c427b1af09b345b5d10347f2ab4c5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlanetAuthoring
-  radius: 25
 --- !u!1 &1723027687
 GameObject:
   m_ObjectHideFlags: 0
@@ -226,10 +148,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fb8bdf544309c34e88ab0454c097d31, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConfigAuthoring
-  PlanePrefab: {fileID: 2895921821699853166, guid: 28470b3042a1d1a49b166472ff3bde0d, type: 3}
-  AirportPrefab: {fileID: 5298481591056710705, guid: 4245deedd170c9f4188f379b13b13ff4, type: 3}
-  PlaneCount: 2
-  AirportCount: 3
+  planePrefab: {fileID: 2895921821699853166, guid: 28470b3042a1d1a49b166472ff3bde0d, type: 3}
+  airportPrefab: {fileID: 5298481591056710705, guid: 4245deedd170c9f4188f379b13b13ff4, type: 3}
+  planetPrefab: {fileID: 1607644553271017260, guid: 87d15d6908f46084882673c94d58fbb3, type: 3}
+  planetRadius: 55
+  airportCount: 8
 --- !u!4 &1723027689
 Transform:
   m_ObjectHideFlags: 0
@@ -250,4 +173,3 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1723027689}
-  - {fileID: 408565674}

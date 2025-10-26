@@ -31,6 +31,7 @@ public partial struct PlaneSpawnSystem : ISystem
         timer = 1.5f;   // reset timer
 
         var config = SystemAPI.GetSingleton<Config>();
+        var radius = config.PlanetRadius;
         
         var planeTransform = state.EntityManager.GetComponentData<LocalTransform>(config.PlanePrefab);
         
@@ -54,7 +55,7 @@ public partial struct PlaneSpawnSystem : ISystem
                 random.NextFloat(-100f, 100f),
                 random.NextFloat(-100f, 100f)
             );
-            float3 dest = float3.zero + math.normalize(r - float3.zero) * (25f + 5f);
+            float3 dest = float3.zero + math.normalize(r - float3.zero) * (radius + 5f);
             
             planeTransform.Position =  airportTransform.ValueRO.Position;
             

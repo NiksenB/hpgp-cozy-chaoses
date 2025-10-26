@@ -3,9 +3,11 @@ using Unity.Entities;
 
 public class ConfigAuthoring : MonoBehaviour
 {
-    public GameObject PlanePrefab;
-    public GameObject AirportPrefab;
-    public int AirportCount;
+    public GameObject planePrefab;
+    public GameObject airportPrefab;
+    public GameObject planetPrefab;
+    public float planetRadius;
+    public int airportCount;
 
     class Baker : Baker<ConfigAuthoring>
     {
@@ -14,9 +16,11 @@ public class ConfigAuthoring : MonoBehaviour
             var entity = GetEntity(authoring, TransformUsageFlags.None);
             AddComponent(entity, new Config
             {
-                PlanePrefab = GetEntity(authoring.PlanePrefab, TransformUsageFlags.Dynamic),
-                AirportPrefab = GetEntity(authoring.AirportPrefab, TransformUsageFlags.Dynamic),
-                AirportCount = authoring.AirportCount
+                PlanetPrefab = GetEntity(authoring.planetPrefab, TransformUsageFlags.Dynamic),
+                AirportPrefab = GetEntity(authoring.airportPrefab, TransformUsageFlags.Dynamic),
+                PlanePrefab = GetEntity(authoring.planePrefab, TransformUsageFlags.Dynamic),
+                PlanetRadius = authoring.planetRadius,
+                AirportCount = authoring.airportCount
             });
         }
     }
@@ -27,5 +31,7 @@ public struct Config : IComponentData
 {
     public Entity PlanePrefab;
     public Entity AirportPrefab;
+    public Entity PlanetPrefab;
+    public float PlanetRadius;
     public int AirportCount;
 }

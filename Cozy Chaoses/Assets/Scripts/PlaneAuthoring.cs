@@ -5,7 +5,7 @@ using UnityEngine;
 public class PlaneAuthoring : MonoBehaviour
 {
     public GameObject Wings;
-    public float3 Dest;
+    public float3 dest;
     
     class Baker : Baker<PlaneAuthoring>
     {
@@ -15,7 +15,7 @@ public class PlaneAuthoring : MonoBehaviour
             AddComponent(entity, new Plane
             {
                 Wings = GetEntity(authoring.Wings, TransformUsageFlags.Dynamic),
-                Dest = authoring.Dest
+                Dest = authoring.dest
             });
         }
     }
