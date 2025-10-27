@@ -23,7 +23,7 @@ public partial struct PlanetSpawnSystem : ISystem
         
         var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
             .CreateCommandBuffer(state.WorldUnmanaged);
-        
+
         state.Dependency = new SpawnPlanet
         {
             ECB = ecb
@@ -44,5 +44,10 @@ public partial struct SpawnPlanet : IJobEntity
         var sphereRadius = configComponent.PlanetRadius;
         var transform = LocalTransform.FromPosition(sphereCenter).ApplyScale(sphereRadius*2); // Assume unit sphere
         ECB.AddComponent(planetEntity, transform);
+        ECB.AddComponent(planetEntity, new PlanetComponent
+        {
+            Radius = sphereRadius,
+            Center = sphereCenter
+        });
     }
 }
