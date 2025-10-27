@@ -1,15 +1,17 @@
-using UnityEngine;
 using Unity.Entities;
 using Unity.Burst;
 using Unity.Mathematics;
 using Unity.Rendering;
 using Unity.Transforms;
+using Unity.VisualScripting;
 using Random = Unity.Mathematics.Random;
+
 public partial struct AirportSpawnSystem : ISystem
 {
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
+        state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>();
         state.RequireForUpdate<Config>();
     }
 
@@ -18,46 +20,48 @@ public partial struct AirportSpawnSystem : ISystem
     {
         // Disable in first update, so it updates only once
         state.Enabled = false;
-
-        float3 sphereCenter = new float3(0, 0, 0);
         
-        var config = SystemAPI.GetSingleton<Config>();
-        float sphereRadius = config.PlanetRadius;
+        var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
+            .CreateCommandBuffer(state.WorldUnmanaged);
+        
+        state.Dependency = new SpawnAirports
+        {
+            ECB = ecb
+        }.Schedule(state.Dependency);
+    }
+}
+
+[BurstCompile]
+public partial struct SpawnAirports : IJobEntity
+{
+    public EntityCommandBuffer ECB;
+    public void Execute(in Config config)
+    {
+        // TODO: Should probably be configurable
+        var sphereCenter = new float3(0, 0, 0);
+        var sphereRadius = config.PlanetRadius;
 
         var random = new Random(72);
         
-        for (int i = 0; i < config.AirportCount; i++)
+        for (var i = 0; i < config.AirportCount; i++)
         {
-            var airportEntity = state.EntityManager.Instantiate(config.AirportPrefab);
+            var airportEntity = ECB.Instantiate(config.AirportPrefab);
             
             var color = new URPMaterialPropertyBaseColor
             {
-                Value = RandomColor(ref random)
+                Value = Utils.RandomColor(ref random)
             };
+            ECB.SetComponent(airportEntity, color);
             
-            state.EntityManager.SetComponentData(airportEntity, color);    
-            
-            float3 newPos = new float3(
+            var newPos = new float3(
                 random.NextFloat(-100f, 100f),
                 random.NextFloat(-100f, 100f),
                 random.NextFloat(-100f, 100f)
             );
-            
-            float3 newSurfacePos = sphereCenter + math.normalize(newPos - sphereCenter) * sphereRadius;
-            LocalTransform transform = LocalTransform.FromPosition(newSurfacePos).ApplyScale(10f);
-            
-            state.EntityManager.SetComponentData(airportEntity, transform);
+            var newSurfacePos = sphereCenter + math.normalize(newPos - sphereCenter) * sphereRadius;
+            var scale = sphereRadius * 0.05f; // Relative to planet size
+            var transform = LocalTransform.FromPosition(newSurfacePos).ApplyScale(scale);
+            ECB.AddComponent(airportEntity, transform);
         }
-    }
-    
-    // From Tank Tutorial:
-    // Return a random color that is visually distinct.
-    // (Naive randomness would produce a distribution of colors clustered 
-    // around a narrow range of hues. See https://martin.ankerl.com/2009/12/09/how-to-create-random-colors-programmatically/ )
-    static float4 RandomColor(ref Random random)
-    {
-        // 0.618034005f is inverse of the golden ratio
-        var hue = (random.NextFloat() + 0.618034005f) % 1;
-        return (Vector4)Color.HSVToRGB(hue, 1.0f, 1.0f);
     }
 }
