@@ -13,6 +13,8 @@ public partial struct AirportSpawnSystem : ISystem
     {
         state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>();
         state.RequireForUpdate<ConfigComponent>();
+        // Ensure a planet exists before we try to spawn airports that depend on it
+        state.RequireForUpdate<PlanetComponent>();
     }
 
     [BurstCompile]
@@ -23,10 +25,13 @@ public partial struct AirportSpawnSystem : ISystem
         
         var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
             .CreateCommandBuffer(state.WorldUnmanaged);
+        // Read the spawned planet from the world and pass it into the job
+        var planet = SystemAPI.GetSingleton<PlanetComponent>();
         
         state.Dependency = new SpawnAirports
         {
-            ECB = ecb
+            ECB = ecb,
+            Planet = planet
         }.Schedule(state.Dependency);
     }
 }
@@ -35,11 +40,12 @@ public partial struct AirportSpawnSystem : ISystem
 public partial struct SpawnAirports : IJobEntity
 {
     public EntityCommandBuffer ECB;
+    public PlanetComponent Planet;
     public void Execute(in ConfigComponent configComponent)
     {
         // TODO: Should probably be configurable
-        var sphereCenter = new float3(0, 0, 0);
-        var sphereRadius = configComponent.PlanetRadius;
+        var sphereCenter = Planet.Center;
+        var sphereRadius = Planet.Radius;
 
         var random = new Random(72);
         
