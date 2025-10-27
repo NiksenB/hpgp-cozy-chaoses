@@ -10,13 +10,13 @@ public partial struct PlaneMovementSystem : ISystem
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
-        state.RequireForUpdate<Config>();
+        state.RequireForUpdate<ConfigComponent>();
     }
     
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        var config = SystemAPI.GetSingleton<Config>();
+        var config = SystemAPI.GetSingleton<ConfigComponent>();
         float sphereRadius = config.PlanetRadius;
         float3 sphereCenter = new float3(0, 0, 0);
         float speed = 5.0f;
@@ -25,14 +25,14 @@ public partial struct PlaneMovementSystem : ISystem
 
         foreach (var (transform, color, entity) in
                  SystemAPI.Query<RefRW<LocalTransform>, RefRW<URPMaterialPropertyBaseColor>>()
-                     .WithAll<Plane>()
+                     .WithAll<PlaneComponent>()
                      .WithEntityAccess())
         {
             // Tanks tutorial note: Modify the point at which we sample the 3D noise function.
             var yPos = transform.ValueRO.Position;
             yPos.y = (float)entity.Index;
             
-            float3 dest = state.GetComponentLookup<Plane>()[entity].Dest;
+            float3 dest = state.GetComponentLookup<PlaneComponent>()[entity].Dest;
             float3 pos = transform.ValueRO.Position;
             
             // Placeholder for despawn behavior

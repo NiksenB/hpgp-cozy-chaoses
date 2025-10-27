@@ -15,7 +15,7 @@ public partial struct PlaneSpawnSystem : ISystem
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
-        state.RequireForUpdate<Config>();
+        state.RequireForUpdate<ConfigComponent>();
         random = new Random(72);
     }
     
@@ -30,13 +30,13 @@ public partial struct PlaneSpawnSystem : ISystem
         } 
         timer = 1.5f;   // reset timer
 
-        var config = SystemAPI.GetSingleton<Config>();
+        var config = SystemAPI.GetSingleton<ConfigComponent>();
         var radius = config.PlanetRadius;
         
         var planeTransform = state.EntityManager.GetComponentData<LocalTransform>(config.PlanePrefab);
         
         foreach (var (airport, airportTransform, color) in
-                 SystemAPI.Query<RefRO<Airport>, RefRO<LocalToWorld>, RefRO<URPMaterialPropertyBaseColor>>())
+                 SystemAPI.Query<RefRO<AirportComponent>, RefRO<LocalToWorld>, RefRO<URPMaterialPropertyBaseColor>>())
         {
             Entity planeEntity = state.EntityManager.Instantiate(config.PlanePrefab);
             
@@ -60,7 +60,7 @@ public partial struct PlaneSpawnSystem : ISystem
             planeTransform.Position =  airportTransform.ValueRO.Position;
             
             state.EntityManager.SetComponentData(planeEntity, planeTransform);
-            state.EntityManager.SetComponentData(planeEntity, new Plane
+            state.EntityManager.SetComponentData(planeEntity, new PlaneComponent
             {
                 Dest = dest
             });

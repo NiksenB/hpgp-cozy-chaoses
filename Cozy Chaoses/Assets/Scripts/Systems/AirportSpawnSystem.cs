@@ -12,7 +12,7 @@ public partial struct AirportSpawnSystem : ISystem
     public void OnCreate(ref SystemState state)
     {
         state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>();
-        state.RequireForUpdate<Config>();
+        state.RequireForUpdate<ConfigComponent>();
     }
 
     [BurstCompile]
@@ -35,17 +35,17 @@ public partial struct AirportSpawnSystem : ISystem
 public partial struct SpawnAirports : IJobEntity
 {
     public EntityCommandBuffer ECB;
-    public void Execute(in Config config)
+    public void Execute(in ConfigComponent configComponent)
     {
         // TODO: Should probably be configurable
         var sphereCenter = new float3(0, 0, 0);
-        var sphereRadius = config.PlanetRadius;
+        var sphereRadius = configComponent.PlanetRadius;
 
         var random = new Random(72);
         
-        for (var i = 0; i < config.AirportCount; i++)
+        for (var i = 0; i < configComponent.AirportCount; i++)
         {
-            var airportEntity = ECB.Instantiate(config.AirportPrefab);
+            var airportEntity = ECB.Instantiate(configComponent.AirportPrefab);
             
             var color = new URPMaterialPropertyBaseColor
             {

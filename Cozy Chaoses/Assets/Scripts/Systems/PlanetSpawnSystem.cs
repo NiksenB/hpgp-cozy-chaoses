@@ -12,7 +12,7 @@ public partial struct PlanetSpawnSystem : ISystem
     public void OnCreate(ref SystemState state)
     {
         state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>();
-        state.RequireForUpdate<Config>();
+        state.RequireForUpdate<ConfigComponent>();
     }
 
     [BurstCompile]
@@ -35,13 +35,13 @@ public partial struct PlanetSpawnSystem : ISystem
 public partial struct SpawnPlanet : IJobEntity
 {
     public EntityCommandBuffer ECB;
-    public void Execute(in Config config)
+    public void Execute(in ConfigComponent configComponent)
     {
-        var planetEntity = ECB.Instantiate(config.PlanetPrefab);
+        var planetEntity = ECB.Instantiate(configComponent.PlanetPrefab);
         
         // TODO: Should probably be configurable
         var sphereCenter = new float3(0, 0, 0);
-        var sphereRadius = config.PlanetRadius;
+        var sphereRadius = configComponent.PlanetRadius;
         var transform = LocalTransform.FromPosition(sphereCenter).ApplyScale(sphereRadius*2); // Assume unit sphere
         ECB.AddComponent(planetEntity, transform);
     }
