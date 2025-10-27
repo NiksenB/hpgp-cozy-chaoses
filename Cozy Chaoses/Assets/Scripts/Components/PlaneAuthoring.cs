@@ -12,7 +12,7 @@ public class PlaneAuthoring : MonoBehaviour
         public override void Bake(PlaneAuthoring authoring)
         {
             var entity = GetEntity(authoring, TransformUsageFlags.Dynamic);
-            AddComponent(entity, new Plane
+            AddComponent(entity, new PlaneComponent
             {
                 Wings = GetEntity(authoring.Wings, TransformUsageFlags.Dynamic),
                 Dest = authoring.dest
@@ -21,7 +21,7 @@ public class PlaneAuthoring : MonoBehaviour
     }
 }
 
-public struct Plane : IComponentData
+public struct PlaneComponent : IComponentData
 {
     public Entity Wings;
     public float3 Dest;

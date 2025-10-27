@@ -8,11 +8,11 @@ public class AirportAuthoring : MonoBehaviour
         public override void Bake(AirportAuthoring authoring)
         {
             var entity = GetEntity(authoring, TransformUsageFlags.Dynamic);
-            AddComponent(entity, new Airport
+            AddComponent(entity, new AirportComponent
             {});
         }
     }
 }
 
-public struct Airport : IComponentData
+public struct AirportComponent : IComponentData
 { }

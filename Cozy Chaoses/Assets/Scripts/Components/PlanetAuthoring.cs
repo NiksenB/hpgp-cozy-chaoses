@@ -11,6 +11,7 @@ public class PlanetAuthoring : MonoBehaviour
         {
             var entity = GetEntity(TransformUsageFlags.Dynamic);
             AddComponent(entity, new Planet
+            AddComponent(entity, new PlanetComponent
             {
                 Radius = authoring.radius
             });
@@ -18,7 +19,7 @@ public class PlanetAuthoring : MonoBehaviour
     }
 }
 
-public struct Planet : IComponentData
+public struct PlanetComponent : IComponentData
 {
     public float Radius;
 }
