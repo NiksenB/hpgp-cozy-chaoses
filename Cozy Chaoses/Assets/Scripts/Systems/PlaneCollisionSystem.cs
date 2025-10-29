@@ -75,20 +75,32 @@ partial struct PlaneCollisionSystem : ISystem
 
             bool isBodyADynamic = PhysicsVelocityData.HasComponent(entityA);
             bool isBodyBDynamic = PhysicsVelocityData.HasComponent(entityB);
-            
+
             bool isBodyAPlane = PlaneComponentLookup.HasComponent(entityA);
             bool isBodyBPlane = PlaneComponentLookup.HasComponent(entityB);
             
-            // Debug.Log("Collision detected!");
+            UnityEngine.Debug.Log("Plane collision detected!");
 
-            if (isBodyAPlane && isBodyBDynamic)
+            // Handle plane-to-plane collisions
+            if (isBodyAPlane && isBodyBPlane && isBodyADynamic && isBodyBDynamic)
+            {
+                // Both are planes - apply upward bounce to both
+                var velocityA = PhysicsVelocityData[entityA];
+                velocityA.Linear = new Unity.Mathematics.float3(0, 10f, 0);
+                PhysicsVelocityData[entityA] = velocityA;
+
+                var velocityB = PhysicsVelocityData[entityB];
+                velocityB.Linear = new Unity.Mathematics.float3(0, 10f, 0);
+                PhysicsVelocityData[entityB] = velocityB;
+            }
+            // Handle plane colliding with other dynamic objects
+            else if (isBodyAPlane && isBodyBDynamic)
             {
                 var velocityComponent = PhysicsVelocityData[entityB];
                 velocityComponent.Linear = new Unity.Mathematics.float3(0, 10f, 0);
                 PhysicsVelocityData[entityB] = velocityComponent;
             }
-
-            if (isBodyBPlane && isBodyADynamic)
+            else if (isBodyBPlane && isBodyADynamic)
             {
                 var velocityComponent = PhysicsVelocityData[entityA];
                 velocityComponent.Linear = new Unity.Mathematics.float3(0, 10f, 0);
