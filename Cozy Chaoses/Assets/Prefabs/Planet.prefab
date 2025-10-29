@@ -138,4 +138,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c1c427b1af09b345b5d10347f2ab4c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlanetAuthoring
-  radius: 25
