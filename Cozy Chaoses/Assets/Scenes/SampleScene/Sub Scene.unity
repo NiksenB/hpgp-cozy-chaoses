@@ -149,7 +149,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConfigAuthoring
   planePrefab: {fileID: 2895921821699853166, guid: 28470b3042a1d1a49b166472ff3bde0d, type: 3}
-  airportPrefab: {fileID: 5298481591056710705, guid: 4245deedd170c9f4188f379b13b13ff4, type: 3}
+  airportPrefab: {fileID: 8140396965256898243, guid: 4245deedd170c9f4188f379b13b13ff4, type: 3}
   planetPrefab: {fileID: 1607644553271017260, guid: 87d15d6908f46084882673c94d58fbb3, type: 3}
   planetRadius: 55
   airportCount: 8
