@@ -3,7 +3,7 @@ using Unity.Burst;
 using Unity.Mathematics;
 using Unity.Rendering;
 using Unity.Transforms;
-using Unity.VisualScripting;
+using UnityEngine;
 using Random = Unity.Mathematics.Random;
 
 public partial struct AirportSpawnSystem : ISystem
@@ -65,9 +65,14 @@ public partial struct SpawnAirports : IJobEntity
                 random.NextFloat(-100f, 100f),
                 random.NextFloat(-100f, 100f)
             );
-            var newSurfacePos = sphereCenter + math.normalize(newPos - sphereCenter) * sphereRadius;
+
+            var up = math.normalize(newPos - sphereCenter);
+            var rot = Quaternion.FromToRotation(Vector3.up, up);
+            var pos = sphereCenter + up * sphereRadius;
             var scale = sphereRadius * 0.05f; // Relative to planet size
-            var transform = LocalTransform.FromPosition(newSurfacePos).ApplyScale(scale);
+            
+            var transform = LocalTransform.FromPositionRotationScale(pos, rot, scale);
+            
             ECB.AddComponent(airportEntity, transform);
         }
     }
