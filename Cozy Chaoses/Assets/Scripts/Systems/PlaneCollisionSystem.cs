@@ -10,49 +10,31 @@ using UnityEngine;
 [UpdateAfter(typeof(PhysicsSystemGroup))]
 partial struct PlaneCollisionSystem : ISystem
 {
-    internal ComponentDataHandles MComponentDataHandles;
-
-    internal struct ComponentDataHandles
-    {
-        public ComponentLookup<PlaneComponent> PlaneComponentLookup;
-        public ComponentLookup<PhysicsVelocity> PhysicsVelocityData;
-
-        public ComponentDataHandles(ref SystemState systemState)
-        {
-            PlaneComponentLookup = systemState.GetComponentLookup<PlaneComponent>(true);
-            PhysicsVelocityData = systemState.GetComponentLookup<PhysicsVelocity>(false);
-        }
-
-        public void Update(ref SystemState systemState)
-        {
-            PlaneComponentLookup.Update(ref systemState);
-            PhysicsVelocityData.Update(ref systemState);
-        }
-    }
+    private ComponentLookup<PlaneComponent> _planeComponentLookup;
 
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
+        state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>();
         state.RequireForUpdate<SimulationSingleton>();
         state.RequireForUpdate(state.GetEntityQuery(ComponentType.ReadOnly<PlaneComponent>()));
-        MComponentDataHandles = new ComponentDataHandles(ref state);
+        _planeComponentLookup = state.GetComponentLookup<PlaneComponent>(true); 
     }
 
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        MComponentDataHandles.Update(ref state);
+        _planeComponentLookup.Update(ref state);
 
         var simulation = SystemAPI.GetSingleton<SimulationSingleton>();
 
-        // var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
-        //     .CreateCommandBuffer(state.WorldUnmanaged);
+        var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
+            .CreateCommandBuffer(state.WorldUnmanaged);
 
         state.Dependency = new PlaneCollisionJob
         {
-            // ECB = ecb,
-            PlaneComponentLookup = MComponentDataHandles.PlaneComponentLookup,
-            PhysicsVelocityData = MComponentDataHandles.PhysicsVelocityData,
+            ECB = ecb,
+            PlaneComponentLookup = _planeComponentLookup,
         }.Schedule(simulation, state.Dependency);
     }
 
@@ -62,38 +44,24 @@ partial struct PlaneCollisionSystem : ISystem
 
     }
 
-    struct PlaneCollisionJob : ICollisionEventsJob
+    struct PlaneCollisionJob : ITriggerEventsJob
     {
-        // public EntityCommandBuffer ECB;
+        public EntityCommandBuffer ECB;
         [ReadOnly] public ComponentLookup<PlaneComponent> PlaneComponentLookup;
-        public ComponentLookup<PhysicsVelocity> PhysicsVelocityData;
 
-        public void Execute(CollisionEvent collisionEvent)
+        public void Execute(TriggerEvent collisionEvent)
         {
-            Entity entityA = collisionEvent.EntityA;
-            Entity entityB = collisionEvent.EntityB;
+            var entityA = collisionEvent.EntityA;
+            var entityB = collisionEvent.EntityB;
 
-            bool isBodyADynamic = PhysicsVelocityData.HasComponent(entityA);
-            bool isBodyBDynamic = PhysicsVelocityData.HasComponent(entityB);
+            var isBodyAPlane = PlaneComponentLookup.HasComponent(entityA);
+            var isBodyBPlane = PlaneComponentLookup.HasComponent(entityB);
             
-            bool isBodyAPlane = PlaneComponentLookup.HasComponent(entityA);
-            bool isBodyBPlane = PlaneComponentLookup.HasComponent(entityB);
+            if (!isBodyAPlane || !isBodyBPlane)
+                return;
             
-            // Debug.Log("Collision detected!");
-
-            if (isBodyAPlane && isBodyBDynamic)
-            {
-                var velocityComponent = PhysicsVelocityData[entityB];
-                velocityComponent.Linear = new Unity.Mathematics.float3(0, 10f, 0);
-                PhysicsVelocityData[entityB] = velocityComponent;
-            }
-
-            if (isBodyBPlane && isBodyADynamic)
-            {
-                var velocityComponent = PhysicsVelocityData[entityA];
-                velocityComponent.Linear = new Unity.Mathematics.float3(0, 10f, 0);
-                PhysicsVelocityData[entityA] = velocityComponent;
-            }
+            // Both entities are planes, handle collision
+            ECB.AddComponent(entityA, new ShouldDespawnComponent());
         }
     }
 }

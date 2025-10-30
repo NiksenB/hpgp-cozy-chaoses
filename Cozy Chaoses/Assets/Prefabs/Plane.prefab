@@ -233,7 +233,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b275e5f92732148048d7b77e264ac30e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Physics.Custom::Unity.Physics.Authoring.PhysicsShapeAuthoring
-  m_ShapeType: 0
+  m_ShapeType: 30
   m_PrimitiveCenter:
     x: 0
     y: 0
@@ -249,13 +249,13 @@ MonoBehaviour:
       z: 0
     RotationOrder: 4
   m_Capsule:
-    Height: 5.4400005
-    Radius: 1.935
-    Axis: 1
-  m_Cylinder:
-    Height: 1.0000001
+    Height: 3.87
     Radius: 2.7200003
-    Axis: 0
+    Axis: 2
+  m_Cylinder:
+    Height: 3.87
+    Radius: 2.7200003
+    Axis: 2
   m_CylinderSideCount: 20
   m_SphereRadius: 2.7200003
   m_MinimumSkinnedVertexWeight: 0.1
