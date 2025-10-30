@@ -41,7 +41,7 @@ public partial struct MovePlanes : IJobEntity
     public float DeltaTime;
     public PlanetComponent Planet;
     
-    public void Execute(Entity entity, ref LocalTransform transform, ref URPMaterialPropertyBaseColor color, in PlaneComponent plane)
+    public void Execute(Entity entity, ref LocalTransform transform, in PlaneComponent plane)
     {
         float sphereRadius = Planet.Radius;
         float3 sphereCenter = Planet.Center;
