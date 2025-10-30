@@ -2,88 +2,92 @@ using Unity.Entities;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Mathematics;
-using Unity.Rendering;
 using Unity.Transforms;
 using Unity.VisualScripting;
-using UnityEditor.ShaderGraph;
+using UnityEngine;
 using Random = Unity.Mathematics.Random;
 
 [UpdateBefore(typeof(TransformSystemGroup))]
 public partial struct PlaneSpawnSystem : ISystem
 {
     private float timer;
-    private Random random;
+    private NativeArray<LocalTransform> airports;
 
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
+        state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>();
         state.RequireForUpdate<ConfigComponent>();
         state.RequireForUpdate<PlanetComponent>();
         state.RequireForUpdate<AirportComponent>();
-        random = new Random(72);
     }
 
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        // Only shoot in frames where timer has expired
-        timer -= SystemAPI.Time.DeltaTime;
-        if (timer > 0)
-        {
-            return;
-        }
-
-        timer = 1.5f; // reset timer
-        
         var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
             .CreateCommandBuffer(state.WorldUnmanaged);
-        // Read the spawned planet from the world and pass it into the job
-        var planet = SystemAPI.GetSingleton<PlanetComponent>();
+        
         var config = SystemAPI.GetSingleton<ConfigComponent>();
+        
+        if (!airports.IsCreated || airports.Length == 0)
+        {
+            var query = SystemAPI.QueryBuilder()
+                .WithAll<AirportComponent, LocalTransform>().Build();
+            
+            airports = query.ToComponentDataArray<LocalTransform>(Allocator.Persistent);
+        }
+
+        var elapsedTime = SystemAPI.Time.ElapsedTime;
         
         state.Dependency = new SpawnPlanes
         {
             ECB = ecb,
-            Planet = planet,
             Config = config,
-            Random =  random
+            ElapsedTime = elapsedTime,
+            Airports = airports
             
         }.Schedule(state.Dependency);
 
     }
+
+    [BurstCompile]
+    public void OnDestroy(ref SystemState state)
+    {
+        airports.Dispose();
+    }
 }
 
 [BurstCompile]
-[WithAll(typeof(AirportComponent))]
+[WithAll(typeof(AirportComponent), typeof(LocalTransform))]
 public partial struct SpawnPlanes : IJobEntity
 {
     public EntityCommandBuffer ECB;
-    public PlanetComponent Planet;
     public ConfigComponent Config;
-    public Random Random;
-    private void Execute(ref LocalToWorld airport, ref URPMaterialPropertyBaseColor color)
+    public double ElapsedTime;
+    public NativeArray<LocalTransform> Airports;
+    private void Execute(ref AirportComponent sourceComponent, in LocalTransform sourceTransform)
     {
-        var sphereCenter = Planet.Center;
-        var sphereRadius = Planet.Radius;
+        if (ElapsedTime < sourceComponent.NextPlaneSpawnTime)
+        {
+            return;
+        }
+ 
+        var random = new Random((uint)ElapsedTime + 100);
+        sourceComponent.NextPlaneSpawnTime += random.NextDouble(2d, 10d);
         
         Entity planeEntity = ECB.Instantiate(Config.PlanePrefab);
         
-        // PLACEHOLDER DESTINATION
-        float3 r = new float3(
-            Random.NextFloat(-100f, 100f),
-            Random.NextFloat(-100f, 100f),
-            Random.NextFloat(-100f, 100f)
-        );
-        float3 dest = sphereCenter + math.normalize(r - sphereCenter) * (sphereRadius + 5f);
-
-        var planeTransform = LocalTransform.FromPosition(airport.Position);
+        var di = math.abs(random.NextInt()) % Airports.Length;
         
-        ECB.AddComponent(planeEntity, planeTransform);
-        ECB.SetComponent(planeEntity, color);
-        ECB.AddComponent(planeEntity, new PlaneComponent
+        while (sourceTransform.Position.Equals(Airports[di].Position))
         {
-            Dest = dest
-        });
+            di = (di+1) %  Airports.Length;
+        }
+
+        var dest = Airports[di].Position;
         
+        ECB.AddComponent(planeEntity, LocalTransform.FromPosition(sourceTransform.Position));
+        ECB.AddComponent(planeEntity, new PlaneComponent { Dest = dest });
     }
 }

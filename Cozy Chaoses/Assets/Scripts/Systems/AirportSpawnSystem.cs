@@ -43,7 +43,6 @@ public partial struct SpawnAirports : IJobEntity
     public PlanetComponent Planet;
     public void Execute(in ConfigComponent configComponent)
     {
-        // TODO: Should probably be configurable
         var sphereCenter = Planet.Center;
         var sphereRadius = Planet.Radius;
 
@@ -58,6 +57,8 @@ public partial struct SpawnAirports : IJobEntity
                 Value = Utils.RandomColor(ref random)
             };
             ECB.SetComponent(airportEntity, color);
+            
+            ECB.SetComponent(airportEntity, new AirportComponent { NextPlaneSpawnTime = random.NextDouble(2d, 10d) });
             
             var newPos = new float3(
                 random.NextFloat(-100f, 100f),
