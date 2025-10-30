@@ -9,10 +9,12 @@ public class AirportAuthoring : MonoBehaviour
         {
             var entity = GetEntity(authoring, TransformUsageFlags.Dynamic);
             AddComponent(entity, new AirportComponent
-            {});
+            {NextPlaneSpawnTime = entity.Index % 20d});
         }
     }
 }
 
 public struct AirportComponent : IComponentData
-{ }
+{
+    public double NextPlaneSpawnTime;
+}
