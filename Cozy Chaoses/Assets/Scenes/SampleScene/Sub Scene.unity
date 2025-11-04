@@ -152,7 +152,7 @@ MonoBehaviour:
   airportPrefab: {fileID: 5298481591056710705, guid: 4245deedd170c9f4188f379b13b13ff4, type: 3}
   planetPrefab: {fileID: 1607644553271017260, guid: 87d15d6908f46084882673c94d58fbb3, type: 3}
   planetRadius: 55
-  airportCount: 8
+  airportCount: 25
 --- !u!4 &1723027689
 Transform:
   m_ObjectHideFlags: 0
