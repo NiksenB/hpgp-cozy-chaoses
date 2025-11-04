@@ -53,7 +53,7 @@ public partial struct SpawnAirports : IJobEntity
         var sphereRadius = Planet.Radius;
 
         var random = new Random(72);
-        var positions = GeneratePoints(configComponent.AirportCount, Positions, sphereRadius);
+        var positions = GeneratePoints(configComponent.AirportCount, Positions);
         
         for (var i = 0; i < configComponent.AirportCount; i++)
         {
@@ -78,8 +78,8 @@ public partial struct SpawnAirports : IJobEntity
         }
     }
     
-    // Below is from tutorial: https://devforum.roblox.com/t/generating-equidistant-points-on-a-sphere/874144
-    private static NativeArray<float3> GeneratePoints(int n, NativeArray<float3> arr, float sphereRadius)
+    // Below is inspired from tutorial: https://devforum.roblox.com/t/generating-equidistant-points-on-a-sphere/874144
+    private static NativeArray<float3> GeneratePoints(int n, NativeArray<float3> arr)
     {
         var goldenRatio = (1 + math.sqrt(5)) / 2;
         var angleIncrement = 2 * math.PI * goldenRatio;
@@ -90,9 +90,9 @@ public partial struct SpawnAirports : IJobEntity
             var incline = math.acos(1 - 2 * distance);
             var azimuth = angleIncrement * i;
     
-            var x = math.sin(incline) * math.cos(azimuth) * sphereRadius;
-            var y = math.sin(incline) * math.sin(azimuth) * sphereRadius;
-            var z = math.cos(incline) * sphereRadius;
+            var x = math.sin(incline) * math.cos(azimuth);
+            var y = math.sin(incline) * math.sin(azimuth);
+            var z = math.cos(incline);
         
             arr[i] = new float3(x, y, z);
         }
