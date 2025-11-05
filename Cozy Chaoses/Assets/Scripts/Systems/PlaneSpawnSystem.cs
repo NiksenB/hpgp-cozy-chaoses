@@ -2,6 +2,7 @@ using Unity.Entities;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Mathematics;
+using Unity.Physics;
 using Unity.Rendering;
 using Unity.Transforms;
 using Random = Unity.Mathematics.Random;
@@ -62,6 +63,7 @@ public partial struct PlaneSpawnSystem : ISystem
             state.EntityManager.SetComponentData(planeEntity, planeTransform);
             state.EntityManager.SetComponentData(planeEntity, new PlaneComponent
             {
+                Start = airportTransform.ValueRO.Position,
                 Dest = dest
             });
         }
