@@ -5,7 +5,7 @@ using UnityEngine.Serialization;
 class PlaneFlightDataAuthoring : MonoBehaviour
 {
     public float maxSpeed = 250f;          // m/s
-    public float cruisingAltitude = 8000f;  // meters above planet surface
+    public float cruisingAltitudePercentage = 0.5f;  // meters above planet surface
     public float accelerationForce = 100000f;      // m/s^2
     public float climbRate = 20f;         // m/s
     public float descentRate = 15f;       // m/s
@@ -22,7 +22,7 @@ class PlaneFlightDataAuthoring : MonoBehaviour
             AddComponent(entity, new PlaneFlightDataComponent
             {
                 MaxSpeed = authoring.maxSpeed,
-                CruisingAltitude = authoring.cruisingAltitude,
+                CruisingAltitudePercentage = authoring.cruisingAltitudePercentage,
                 Acceleration = authoring.accelerationForce,
                 ClimbRate = authoring.climbRate,
                 DescentRate = authoring.descentRate,
@@ -40,7 +40,7 @@ class PlaneFlightDataAuthoring : MonoBehaviour
 public struct PlaneFlightDataComponent : IComponentData
 {
     public float MaxSpeed;          // m/s
-    public float CruisingAltitude;  // meters above planet surface
+    public float CruisingAltitudePercentage;  // Percentage of planet radius
     public float Acceleration;      // m/s^2
     public float ClimbRate;         // m/s
     public float DescentRate;       // m/s

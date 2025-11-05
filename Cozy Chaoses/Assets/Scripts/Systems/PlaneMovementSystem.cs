@@ -54,9 +54,11 @@ public partial struct MovePlanes : IJobEntity
         float currentAltitude = math.length(currentPosition - sphereCenter) - sphereRadius;
         float currentSpeed = math.length(velocity.Linear);
 
+        float cruisingAltitude = sphereRadius * flightDataComponent.CruisingAltitudePercentage;
+
         float3 targetDirectionOnSphere = GetGreatCircleDirection(currentPosition, plane.Dest, sphereCenter);
 
-        UpdateFlightPhase(ref flightDataComponent, plane, currentPosition, currentAltitude);
+        UpdateFlightPhase(ref flightDataComponent, plane, cruisingAltitude, currentPosition, currentAltitude);
         if (flightDataComponent.CurrentPhase == FlightPhase.Landing)
         {
             ECB.AddComponent(entity, new ShouldDespawnComponent());
@@ -89,7 +91,7 @@ public partial struct MovePlanes : IJobEntity
                 ApplyThrust(ref velocity, mass, currentForward, currentSpeed, flightDataComponent.MaxSpeed,
                     flightDataComponent.Acceleration, DeltaTime);
 
-                float altitudeError = flightDataComponent.CruisingAltitude - currentAltitude;
+                float altitudeError = cruisingAltitude - currentAltitude;
                 float liftForce = altitudeError * 10f; // Proportional lift
                 ApplyForceToVelocity(ref velocity, mass, liftForce, DeltaTime, currentUp);
                 break;
@@ -119,24 +121,24 @@ public partial struct MovePlanes : IJobEntity
         in PhysicsMass mass, in LocalTransform tranform, float3 targetDirection, float3 planetUpDirection,
         float deltaTime)
     {
-float3 currentUp = tranform.Up();
-    float3 currentForward = tranform.Forward();
+        float3 currentUp = tranform.Up();
+        float3 currentForward = tranform.Forward();
 
-    float3 stabilityTorque = math.cross(currentUp, planetUpDirection) * flightDataComponent.StabilityStrength;
+        float3 stabilityTorque = math.cross(currentUp, planetUpDirection) * flightDataComponent.StabilityStrength;
 
-    float3 projectedTarget = targetDirection - math.dot(targetDirection, currentUp) * currentUp;
-    projectedTarget = math.normalize(projectedTarget);
+        float3 projectedTarget = targetDirection - math.dot(targetDirection, currentUp) * currentUp;
+        projectedTarget = math.normalize(projectedTarget);
 
-    float3 yawTorque = math.cross(currentForward, projectedTarget) * flightDataComponent.SteerStrength;
+        float3 yawTorque = math.cross(currentForward, projectedTarget) * flightDataComponent.SteerStrength;
 
-    float3 totalTorque = stabilityTorque + yawTorque;
+        float3 totalTorque = stabilityTorque + yawTorque;
 
-    // apply steering / stability torques
-    ApplyTorque(ref velocity, mass, totalTorque, deltaTime);
+        // apply steering / stability torques
+        ApplyTorque(ref velocity, mass, totalTorque, deltaTime);
 
-    // apply exponential angular damping (avoids double-integrating damping as a torque)
-    float dampingFactor = math.exp(-flightDataComponent.AngularDamping * deltaTime);
-    velocity.Angular *= dampingFactor;
+        // apply exponential angular damping (avoids double-integrating damping as a torque)
+        float dampingFactor = math.exp(-flightDataComponent.AngularDamping * deltaTime);
+        velocity.Angular *= dampingFactor;
     }
 
     // Simplified PID for thrust
@@ -155,19 +157,19 @@ float3 currentUp = tranform.Up();
     }
 
     private void UpdateFlightPhase(ref PlaneFlightDataComponent flightDataComponent, in PlaneComponent plane,
-        float3 currentPosition, float currentAltitude)
+        float cruisingAltitude, float3 currentPosition, float currentAltitude)
     {
         switch (flightDataComponent.CurrentPhase)
         {
             case FlightPhase.TakeOff:
-                if (currentAltitude >= 20f)
+                if (currentAltitude >= cruisingAltitude * 0.1f)
                 {
                     flightDataComponent.CurrentPhase = FlightPhase.Cruise;
                 }
 
                 break;
             case FlightPhase.Climb:
-                if (currentAltitude >= flightDataComponent.CruisingAltitude * 0.95f)
+                if (currentAltitude >= cruisingAltitude * 0.95f)
                 {
                     flightDataComponent.CurrentPhase = FlightPhase.Cruise;
                 }
@@ -175,14 +177,14 @@ float3 currentUp = tranform.Up();
                 break;
             case FlightPhase.Cruise:
                 float distanceToTarget = math.distance(currentPosition, plane.Dest);
-                if (distanceToTarget <= 1000f)
-                {
-                    flightDataComponent.CurrentPhase = FlightPhase.Descent;
-                }
+                // if (distanceToTarget <= 1000f)
+                // {
+                //     flightDataComponent.CurrentPhase = FlightPhase.Descent;
+                // }
 
                 break;
             case FlightPhase.Descent:
-                if (currentAltitude <= 20f)
+                if (currentAltitude <= currentAltitude * 0.1f)
                 {
                     flightDataComponent.CurrentPhase = FlightPhase.Landing;
                 }

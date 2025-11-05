@@ -264,13 +264,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlaneFlightDataAuthoring
   maxSpeed: 250
-  cruisingAltitude: 8000
+  cruisingAltitudePercentage: 0.5
   accelerationForce: 100000
   climbRate: 20
   descentRate: 15
-  steerStrength: 400
-  stabilityStrength: 400
-  angularDamping: 3.5
+  steerStrength: 10000000
+  stabilityStrength: 1e+9
+  angularDamping: 0
 --- !u!1001 &5499284886446994782
 PrefabInstance:
   m_ObjectHideFlags: 0
