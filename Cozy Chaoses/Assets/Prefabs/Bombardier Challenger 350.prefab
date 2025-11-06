@@ -271,6 +271,7 @@ MonoBehaviour:
   maxClimbAngle: 25
   maxDescentAngle: 20
   steerStrength: 300
+  pitchStrength: 150
 --- !u!114 &6068771875873853249
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -45,4 +45,11 @@ public struct PlaneFlightDebugDataComponent : IComponentData
     public float InverseMass;
 
     public float EarthScale;
+
+    public float3 RotationAxis;
+    public float ScaledPitchTorque;
+    public float3 PitchVector;
+    public float AltitudeError;
+    public float3 PitchTorque;
+    public float3 PitchAccelerationVector;
 }
