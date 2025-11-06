@@ -12,8 +12,10 @@ GameObject:
   - component: {fileID: 1583514023987035447}
   - component: {fileID: 8391622327058057228}
   - component: {fileID: 8799460154018577018}
+  - component: {fileID: 7333403830917244892}
+  - component: {fileID: 6068771875873853249}
   m_Layer: 0
-  m_Name: Plane
+  m_Name: Bombardier Challenger 350
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -66,9 +68,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Physics.Custom::Unity.Physics.Authoring.PhysicsBodyAuthoring
   m_MotionType: 0
   m_Smoothing: 0
-  m_Mass: 1
+  m_Mass: 11249
   m_LinearDamping: 0.01
-  m_AngularDamping: 0.05
+  m_AngularDamping: 0.5
   m_InitialLinearVelocity:
     x: 0
     y: 0
@@ -250,6 +252,37 @@ MonoBehaviour:
         Tag07: 0
     m_SerializedVersion: 1
   m_SerializedVersion: 1
+--- !u!114 &7333403830917244892
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2895921821699853166}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce374d97f6ba884879fbada292ad7e0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlaneFlightDataAuthoring
+  maxSpeed: 870
+  v1Speed: 70
+  thrust: 66
+  cruisingAltitudePercentage: 0.5
+  maxClimbAngle: 25
+  maxDescentAngle: 20
+  steerStrength: 300
+--- !u!114 &6068771875873853249
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2895921821699853166}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4cca35a1f0047e8a34ef0aaade0da6a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Components.PlaneFlightDebugDataAuthoring
 --- !u!1001 &5499284886446994782
 PrefabInstance:
   m_ObjectHideFlags: 0

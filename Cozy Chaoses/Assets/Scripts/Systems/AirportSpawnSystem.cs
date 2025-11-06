@@ -70,9 +70,9 @@ public partial struct SpawnAirports : IJobEntity
             var up = math.normalize(positions[i] - sphereCenter);
             var rot = Quaternion.FromToRotation(Vector3.up, up);
             var pos = sphereCenter + up * sphereRadius;
-            var scale = sphereRadius * 0.05f; // Relative to planet size
+            // var scale = sphereRadius * 0.05f; // Relative to planet size
             
-            var transform = LocalTransform.FromPositionRotationScale(pos, rot, scale);
+            var transform = LocalTransform.FromPositionRotationScale(pos, rot, 1);
             
             ECB.AddComponent(airportEntity, transform);
         }

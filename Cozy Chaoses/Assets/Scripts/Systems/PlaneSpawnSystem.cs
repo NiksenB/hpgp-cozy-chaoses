@@ -73,7 +73,7 @@ public partial struct SpawnPlanes : IJobEntity
         }
  
         var random = new Random((uint)ElapsedTime + 100);
-        sourceComponent.NextPlaneSpawnTime += random.NextDouble(2d, 10d);
+        sourceComponent.NextPlaneSpawnTime += random.NextDouble(5d, 15d);
         
         Entity planeEntity = ECB.Instantiate(Config.PlanePrefab);
         
