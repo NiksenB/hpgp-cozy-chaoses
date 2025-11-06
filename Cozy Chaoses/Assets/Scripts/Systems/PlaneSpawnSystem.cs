@@ -10,7 +10,6 @@ using Random = Unity.Mathematics.Random;
 [UpdateBefore(typeof(TransformSystemGroup))]
 public partial struct PlaneSpawnSystem : ISystem
 {
-    private float timer;
     private NativeArray<LocalTransform> airports;
 
     [BurstCompile]
@@ -88,6 +87,10 @@ public partial struct SpawnPlanes : IJobEntity
         var dest = Airports[di].Position;
         
         ECB.AddComponent(planeEntity, LocalTransform.FromPosition(sourceTransform.Position));
-        ECB.AddComponent(planeEntity, new PlaneComponent { Dest = dest });
+        ECB.AddComponent(planeEntity, new PlaneComponent
+        {
+            Start = sourceTransform.Position,
+            Dest = dest
+        });
     }
 }

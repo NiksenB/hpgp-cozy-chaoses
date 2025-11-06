@@ -24,5 +24,6 @@ public class PlaneAuthoring : MonoBehaviour
 public struct PlaneComponent : IComponentData
 {
     public Entity Wings;
+    public float3 Start;
     public float3 Dest;
 }
