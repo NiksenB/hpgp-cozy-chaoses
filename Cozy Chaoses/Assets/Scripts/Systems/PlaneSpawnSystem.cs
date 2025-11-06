@@ -86,7 +86,7 @@ public partial struct SpawnPlanes : IJobEntity
 
         var dest = Airports[di].Position;
         
-        ECB.AddComponent(planeEntity, LocalTransform.FromPosition(sourceTransform.Position));
+        ECB.AddComponent(planeEntity, LocalTransform.FromPositionRotation(sourceTransform.Position, sourceTransform.Rotation));
         ECB.AddComponent(planeEntity, new PlaneComponent
         {
             Start = sourceTransform.Position,
