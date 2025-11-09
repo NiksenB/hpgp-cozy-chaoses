@@ -34,7 +34,7 @@ class PlaneFlightDataAuthoring : MonoBehaviour
                 SteerStrength = authoring.steerStrength,
                 PitchStrength = authoring.pitchStrength,
                 
-                CurrentPhase = FlightPhase.TakeOff
+                CurrentPhase = FlightPhase.Cruise
             });
         }
     }

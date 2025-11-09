@@ -74,7 +74,7 @@ public partial struct MovePlanes : IJobEntity
 
         UpdateFlightPhase(ref flightDataComponent, earthScale, currentSpeed, currentAltitude, targetAltitude);
 
-        if (flightDataComponent.CurrentPhase == FlightPhase.Cruise)
+        if (flightDataComponent.CurrentPhase == FlightPhase.Descent)
         {
             velocity.Linear = new float3(0, 0, 0);
             ECB.RemoveComponent<PlaneComponent>(entity);
@@ -84,8 +84,7 @@ public partial struct MovePlanes : IJobEntity
         float targetSpeed = GetTargetSpeed(flightDataComponent) * earthScale;
         targetAltitude = GetTargetAltitude(flightDataComponent, sphereRadius) * earthScale;
 
-        ApplyPitch(ref debugData, ref velocity, mass, earthScale, transform, flightDataComponent, DeltaTime,
-            currentPitchAngle, currentAltitude, targetAltitude);
+        ApplyPitch(ref debugData, ref velocity, mass, earthScale, transform, flightDataComponent, DeltaTime, currentAltitude, targetAltitude, sphereCenter);
 
         ApplyForwardThrust(ref debugData, ref velocity, mass, earthScale, planeNormal, flightDataComponent.Thrust,
             DeltaTime, currentSpeed, targetSpeed);
@@ -155,6 +154,9 @@ public partial struct MovePlanes : IJobEntity
                 }
 
                 break;
+            case FlightPhase.Cruise:
+                // Something about distance to target
+                break;
         }
     }
 
@@ -177,27 +179,64 @@ public partial struct MovePlanes : IJobEntity
 
     private void ApplyPitch(ref PlaneFlightDebugDataComponent debugData, ref PhysicsVelocity vel, in PhysicsMass mass,
         float earthScale, in LocalTransform transform,
-        in PlaneFlightDataComponent flightDataComponent, float deltaTime, float currentAngle, float currentAltitude,
-        float targetAltitude)
+        in PlaneFlightDataComponent flightDataComponent, float deltaTime, float currentAltitude,
+        float targetAltitude, float3 planetCenter)
     {
         float3 rotationAxis = transform.Right();
+        float3 forward = transform.Forward();
+
+        // CORRECTED: Local "up" is radial direction from planet center
+        float3 toAircraft = transform.Position - planetCenter;
+        float3 localUp = -math.normalize(toAircraft);
+        
+        float currentPitch = math.asin(math.clamp(math.dot(forward, localUp), -1f, 1f)); // Radians
 
         float scaledPitchTorque = flightDataComponent.PitchStrength * earthScale;
         float3 pitchVector = rotationAxis * scaledPitchTorque;
 
+        // Calculate desired pitch based on altitude error
         float altitudeError = targetAltitude - currentAltitude;
-        float3 torque = math.clamp(altitudeError, -1, 1) * pitchVector;
-        float3 accelerationVector = torque * mass.InverseMass;
+        float desiredPitchInput = math.clamp(altitudeError / 100f, -1, 1); // Adjust divisor for sensitivity
 
-        vel.Angular += accelerationVector * deltaTime;
+        // Apply max climb angle constraint
+        float maxClimbAngleRad = math.radians(flightDataComponent.MaxClimbAngle);
+        float targetPitch = desiredPitchInput * maxClimbAngleRad;
 
+        // Clamp current pitch to max climb angle (prevent over-pitching)
+        float pitchError = targetPitch - currentPitch;
+        float finalPitchInput = math.clamp(pitchError * 2f, -1, 1); // Proportional control
+
+        // Only apply pitch if within climb angle limits
+        if (currentPitch > maxClimbAngleRad && desiredPitchInput > 0)
+        {
+            finalPitchInput = math.min(finalPitchInput, 0); // Don't pitch up more
+        }
+        else if (currentPitch < -maxClimbAngleRad && desiredPitchInput < 0)
+        {
+            finalPitchInput = math.max(finalPitchInput, 0); // Don't pitch down more
+        }
+
+        float3 torque = finalPitchInput * pitchVector;
+
+        // Use inertia tensor for angular acceleration
+        float3 angularAcceleration = mass.InverseInertia * torque;
+
+        vel.Angular += angularAcceleration * deltaTime;
+
+        // Debug data
         debugData.RotationAxis = rotationAxis;
         debugData.ScaledPitchTorque = scaledPitchTorque;
         debugData.PitchVector = pitchVector;
         debugData.AltitudeError = altitudeError;
-        // debugData.AngleNormalized = angleNormalized;
         debugData.PitchTorque = torque;
-        debugData.PitchAccelerationVector = accelerationVector;
+        debugData.PitchAccelerationVector = angularAcceleration;
+        debugData.CurrentPitch = math.degrees(currentPitch);
+        debugData.TargetPitch = math.degrees(targetPitch);
+        debugData.DesiredPitchInput = desiredPitchInput;
+        debugData.FinalPitchInput = finalPitchInput;
+        debugData.LocalUp = localUp;
+        debugData.ForwardDotLocalUp = math.dot(forward, localUp);
+        debugData.RawCurrentPitch = math.asin(math.clamp(math.dot(forward, localUp), -1f, 1f));
     }
 
 //     float3 currentUp = math.normalize(currentPosition - sphereCenter);

@@ -52,4 +52,10 @@ public struct PlaneFlightDebugDataComponent : IComponentData
     public float AltitudeError;
     public float3 PitchTorque;
     public float3 PitchAccelerationVector;
+
+    public float DesiredPitchInput;
+    public float3 FinalPitchInput;
+    public float3 LocalUp;
+    public float ForwardDotLocalUp;
+    public float RawCurrentPitch;
 }
