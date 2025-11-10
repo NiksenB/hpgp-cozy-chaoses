@@ -1,10 +1,5 @@
-using System;
-using Unity.Entities;
-using Unity.Mathematics;
 using UnityEngine.InputSystem;
 using UnityEngine;
-using UnityEngine.InputSystem.Composites;
-using UnityEngine.Serialization;
 
 public class CameraController : MonoBehaviour
 {
