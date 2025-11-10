@@ -131,6 +131,8 @@ GameObject:
   - component: {fileID: 330585545}
   - component: {fileID: 330585544}
   - component: {fileID: 330585547}
+  - component: {fileID: 330585549}
+  - component: {fileID: 330585548}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -256,6 +258,188 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &330585548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 330585543}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.PlayerInput
+  m_Actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_NotificationBehavior: 0
+  m_UIInputModule: {fileID: 0}
+  m_DeviceLostEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_DeviceRegainedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ControlsChangedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ActionEvents: []
+  m_NeverAutoSwitchControlSchemes: 0
+  m_DefaultControlScheme: Keyboard&Mouse
+  m_DefaultActionMap: Player
+  m_SplitScreenIndex: -1
+  m_Camera: {fileID: 330585545}
+--- !u!114 &330585549
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 330585543}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0e88d2dac0ef3445b56fed6e41b13b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraController
+  cameraMoveRotate:
+    m_Name: Camera Move Rotate
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 9e89b1a5-622b-4bc5-b000-8ca219ecd2a2
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings:
+    - m_Name: WASD
+      m_Id: aa3bc960-e05e-479f-95f9-fdbc87f1600f
+      m_Path: 2DVector
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Camera Move Rotate
+      m_Flags: 4
+    - m_Name: up
+      m_Id: 857b2853-9602-4553-8260-145e3b22aa31
+      m_Path: <Keyboard>/w
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Camera Move Rotate
+      m_Flags: 8
+    - m_Name: down
+      m_Id: 56b1f94f-8db6-47ee-95e3-bdb643fc8e25
+      m_Path: <Keyboard>/s
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Camera Move Rotate
+      m_Flags: 8
+    - m_Name: left
+      m_Id: 7c911952-5668-42bb-92e0-b3bc1c612fad
+      m_Path: <Keyboard>/a
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Camera Move Rotate
+      m_Flags: 8
+    - m_Name: right
+      m_Id: a8fb98c7-adf0-4fd5-8995-49857023c57b
+      m_Path: <Keyboard>/d
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Camera Move Rotate
+      m_Flags: 8
+    - m_Name: Arrows
+      m_Id: 151c3896-a6a7-4d63-9f2a-85731854425b
+      m_Path: 2DVector
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Camera Move Rotate
+      m_Flags: 4
+    - m_Name: up
+      m_Id: 602232fb-d546-4522-ad2b-fa399829d107
+      m_Path: <Keyboard>/upArrow
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Camera Move Rotate
+      m_Flags: 8
+    - m_Name: down
+      m_Id: 74f2f7b5-29b9-4efc-bed1-1da4539496b9
+      m_Path: <Keyboard>/downArrow
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Camera Move Rotate
+      m_Flags: 8
+    - m_Name: left
+      m_Id: 63c1d988-d535-4125-9fb2-758b4a2fcf9d
+      m_Path: <Keyboard>/leftArrow
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Camera Move Rotate
+      m_Flags: 8
+    - m_Name: right
+      m_Id: a038dde3-6d9c-410a-b3b9-e64a50ffba6a
+      m_Path: <Keyboard>/rightArrow
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Camera Move Rotate
+      m_Flags: 8
+    m_Flags: 0
+  cameraRotateModifier:
+    m_Name: Camera Rotate Modifier
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 40e8411b-5d66-4120-b6d1-30ada1295b1c
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings:
+    - m_Name: 
+      m_Id: 5cdf860f-17af-4863-8c25-b88bb1a00c96
+      m_Path: <Keyboard>/alt
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Camera Rotate Modifier
+      m_Flags: 0
+    - m_Name: 
+      m_Id: 0f4464ef-3aae-456a-abea-5e7168031b49
+      m_Path: <Keyboard>/r
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Camera Rotate Modifier
+      m_Flags: 0
+    m_Flags: 0
+  cameraZoomModifier:
+    m_Name: Camera Zoom Modifier
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 5069b622-9b4e-42dc-9884-a634d77ccdb2
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings:
+    - m_Name: 
+      m_Id: 96ade32c-098b-491d-a91c-f38741a45fe6
+      m_Path: <Keyboard>/z
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Camera Zoom Modifier
+      m_Flags: 0
+    - m_Name: 
+      m_Id: 6ecb6410-6a28-42b9-a067-28fec2533a0e
+      m_Path: <Keyboard>/space
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Camera Zoom Modifier
+      m_Flags: 0
+    m_Flags: 0
+  speed: 100
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
