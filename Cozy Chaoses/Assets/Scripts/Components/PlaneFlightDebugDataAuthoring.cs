@@ -58,4 +58,8 @@ public struct PlaneFlightDebugDataComponent : IComponentData
     public float3 LocalUp;
     public float ForwardDotLocalUp;
     public float RawCurrentPitch;
+
+    public float RollError;
+    public float3 RollTorque;
+    public float3 RollAccelerationVector;
 }

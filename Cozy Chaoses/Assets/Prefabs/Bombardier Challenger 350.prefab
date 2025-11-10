@@ -270,8 +270,10 @@ MonoBehaviour:
   cruisingAltitudePercentage: 0.5
   maxClimbAngle: 25
   maxDescentAngle: 20
-  steerStrength: 300
-  pitchStrength: 100000
+  pitchStrength: 50
+  pitchDampening: 0.8
+  yawStrength: 2000
+  rollStrengh: 100
 --- !u!114 &6068771875873853249
 MonoBehaviour:
   m_ObjectHideFlags: 0

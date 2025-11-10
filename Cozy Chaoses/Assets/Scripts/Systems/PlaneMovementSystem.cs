@@ -85,9 +85,12 @@ public partial struct MovePlanes : IJobEntity
         targetAltitude = GetTargetAltitude(flightDataComponent, sphereRadius) * earthScale;
 
         ApplyPitch(ref debugData, ref velocity, mass, earthScale, transform, flightDataComponent, DeltaTime, currentAltitude, targetAltitude, sphereCenter);
+        
+        // ApplyRollStabilization(ref debugData, ref velocity, mass, transform, sphereCenter, flightDataComponent.RollStrength, DeltaTime);
 
         ApplyForwardThrust(ref debugData, ref velocity, mass, earthScale, planeNormal, flightDataComponent.Thrust,
             DeltaTime, currentSpeed, targetSpeed);
+        
 
         debugData.CurrentPosition = currentPosition;
         debugData.CurrentPositionOnSphere = currentPositionOnSphere;
@@ -169,7 +172,8 @@ public partial struct MovePlanes : IJobEntity
         float3 thrustVector = forwardDirection * thrustNewtons;
 
         float speedError = targetSpeed - currentSpeed;
-        float3 thrust = math.clamp(speedError, -1, 1) * thrustVector;
+        float thrustInput = math.clamp(speedError / 50f, -1f, 1f);
+        float3 thrust = thrustInput * thrustVector;
         float3 accelerationVector = thrust * mass.InverseMass;
 
         vel.Linear += accelerationVector * deltaTime;
@@ -187,7 +191,7 @@ public partial struct MovePlanes : IJobEntity
 
         // CORRECTED: Local "up" is radial direction from planet center
         float3 toAircraft = transform.Position - planetCenter;
-        float3 localUp = -math.normalize(toAircraft);
+        float3 localUp = math.normalize(toAircraft);
         
         float currentPitch = math.asin(math.clamp(math.dot(forward, localUp), -1f, 1f)); // Radians
 
@@ -196,7 +200,7 @@ public partial struct MovePlanes : IJobEntity
 
         // Calculate desired pitch based on altitude error
         float altitudeError = targetAltitude - currentAltitude;
-        float desiredPitchInput = math.clamp(altitudeError / 100f, -1, 1); // Adjust divisor for sensitivity
+        float desiredPitchInput = math.clamp(altitudeError / 50f, -1, 1); // Adjust divisor for sensitivity
 
         // Apply max climb angle constraint
         float maxClimbAngleRad = math.radians(flightDataComponent.MaxClimbAngle);
@@ -216,7 +220,16 @@ public partial struct MovePlanes : IJobEntity
             finalPitchInput = math.max(finalPitchInput, 0); // Don't pitch down more
         }
 
-        float3 torque = finalPitchInput * pitchVector;
+        float3 proportionalTorque = -finalPitchInput * pitchVector;
+        
+        // Get the current angular velocity *around the pitch axis* (in rad/s)
+        float currentPitchVelocity = math.dot(vel.Angular, rotationAxis);
+        
+        // Apply a damping torque *opposite* to the current pitch velocity
+        // We scale it by the damping factor and the main torque strength
+        float3 dampingTorque = -rotationAxis * currentPitchVelocity * flightDataComponent.PitchDamping * scaledPitchTorque;
+        
+        float3 torque = proportionalTorque + dampingTorque;
 
         // Use inertia tensor for angular acceleration
         float3 angularAcceleration = mass.InverseInertia * torque;
@@ -237,6 +250,34 @@ public partial struct MovePlanes : IJobEntity
         debugData.LocalUp = localUp;
         debugData.ForwardDotLocalUp = math.dot(forward, localUp);
         debugData.RawCurrentPitch = math.asin(math.clamp(math.dot(forward, localUp), -1f, 1f));
+    }
+    
+    private void ApplyRollStabilization(ref PlaneFlightDebugDataComponent debugData, ref PhysicsVelocity vel, in PhysicsMass mass,
+        in LocalTransform transform, float3 planetCenter, float rollStrength, float deltaTime)
+    {
+        // Get the "correct" up vector (radial from planet)
+        float3 localUp = math.normalize(transform.Position - planetCenter);
+        
+        // Get the plane's current right vector
+        float3 planeRight = transform.Right();
+
+        // Calculate the roll error. 
+        // We dot the plane's right vector with the local up vector.
+        // If the plane is perfectly level, planeRight is perpendicular to localUp, so the dot product is 0.
+        // If it rolls left, planeRight points "up", dot is positive.
+        // If it rolls right, planeRight points "down", dot is negative.
+        float rollError = math.dot(planeRight, localUp);
+
+        // We apply torque around the plane's forward axis to correct this error.
+        // The -rollError is because a positive error (rolled left) needs negative torque to roll right.
+        float3 rollTorque = transform.Forward() * (-rollError * rollStrength);
+
+        float3 angularAcceleration = mass.InverseInertia * rollTorque;
+        vel.Angular += angularAcceleration * deltaTime;
+
+        debugData.RollError = rollError;
+        debugData.RollTorque = rollTorque;
+        debugData.RollAccelerationVector = angularAcceleration;
     }
 
 //     float3 currentUp = math.normalize(currentPosition - sphereCenter);

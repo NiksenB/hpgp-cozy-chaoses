@@ -13,8 +13,10 @@ class PlaneFlightDataAuthoring : MonoBehaviour
     public float maxClimbAngle = 25f;
     public float maxDescentAngle = 20f;
     
-    public float steerStrength = 25f;
-    public float pitchStrength = 30f;
+    public float pitchStrength = 3000f;
+    public float pitchDampening = 0.2f;
+    public float yawStrength = 2000f;
+    public float rollStrengh = 2000f;
     
     class Baker : Baker<PlaneFlightDataAuthoring>
     {
@@ -31,8 +33,10 @@ class PlaneFlightDataAuthoring : MonoBehaviour
                 MaxClimbAngle = authoring.maxClimbAngle,
                 MaxDescentAngle = authoring.maxDescentAngle,
                 
-                SteerStrength = authoring.steerStrength,
                 PitchStrength = authoring.pitchStrength,
+                PitchDamping = authoring.pitchDampening,
+                RollStrength = authoring.rollStrengh,
+                YawStrength = authoring.yawStrength,
                 
                 CurrentPhase = FlightPhase.Cruise
             });
@@ -49,8 +53,10 @@ public struct PlaneFlightDataComponent : IComponentData
     public float MaxClimbAngle;
     public float MaxDescentAngle;
 
-    public float SteerStrength;
     public float PitchStrength;
+    public float PitchDamping;
+    public float RollStrength;
+    public float YawStrength;
     
     public FlightPhase CurrentPhase;
 }
