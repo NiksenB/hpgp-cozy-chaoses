@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class PlaneAuthoring : MonoBehaviour
 {
-    public GameObject Wings;
     public float3 dest;
     
     class Baker : Baker<PlaneAuthoring>
@@ -14,7 +13,6 @@ public class PlaneAuthoring : MonoBehaviour
             var entity = GetEntity(authoring, TransformUsageFlags.Dynamic);
             AddComponent(entity, new PlaneComponent
             {
-                Wings = GetEntity(authoring.Wings, TransformUsageFlags.Dynamic),
                 Dest = authoring.dest
             });
         }
@@ -23,6 +21,5 @@ public class PlaneAuthoring : MonoBehaviour
 
 public struct PlaneComponent : IComponentData
 {
-    public Entity Wings;
     public float3 Dest;
 }
