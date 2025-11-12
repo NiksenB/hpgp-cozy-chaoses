@@ -62,6 +62,7 @@ partial struct PlaneCollisionSystem : ISystem
             
             // Both entities are planes, handle collision
             ECB.AddComponent(entityA, new ShouldDespawnComponent());
+            ECB.AddComponent(entityB, new ShouldDespawnComponent());
         }
     }
 }
