@@ -41,79 +41,164 @@ public partial struct MovePlanes : IJobEntity
     public float DeltaTime;
     public PlanetComponent Planet;
 
-    public void Execute(Entity entity, ref LocalTransform transform, ref PlaneFlightDataComponent flightDataComponent,
-        ref PlaneFlightDebugDataComponent debugData, ref PhysicsVelocity velocity, in PhysicsMass mass,
-        in PlaneComponent plane)
+    public void Execute(
+        ref PlaneFlightDebugDataComponent debugData,
+        Entity entity,
+        ref LocalTransform transform,
+        ref PhysicsVelocity velocity,
+        in PhysicsMass mass,
+        in PlaneComponent plane,
+        ref PlaneFlightDataComponent config)
     {
+        // --- 1. GET CURRENT STATE ---
+        // Get all the state variables we need, just like you did before.
+
+        // Planet and Gravity
+        float3 planetCenter = Planet.Center;
+        float planetGravity = Planet.Gravity;
+        float3 position = transform.Position;
+        float3 toPlanet = planetCenter - position;
+        float3 gravityDir = math.normalize(toPlanet); // This is "Down"
+        float3 localUp = -gravityDir; // This is "Up"
         float sphereRadius = Planet.Radius;
-        float3 sphereCenter = Planet.Center;
         float earthScale = Planet.EarthScale;
+        float currentAltitude = math.length(toPlanet) - Planet.Radius;
 
-        Vector3 planeNormal = transform.Forward();
+        // Velocity and Aerodynamics
+        float3 linearVelocity = velocity.Linear;
+        float currentSpeed = math.length(linearVelocity);
+        float3 velocityDir = (currentSpeed > 0.01f) ? (linearVelocity / currentSpeed) : float3.zero;
 
-        float3 currentPosition = transform.Position;
-        float3 currentPositionOnSphere = math.normalize(currentPosition - sphereCenter);
+        // Plane's Orientation
+        float3 forward = transform.Forward();
+        float3 right = transform.Right();
+        float3 up = transform.Up(); // The way the plane's "roof" is pointing
 
-        float3 destinationPositon = plane.Dest;
-        float3 destinationPositionOnSphere = math.normalize(destinationPositon - sphereCenter);
+        // Get auto pilot values
+        float targetAltitude = GetTargetAltitude(config, sphereRadius) * earthScale;
+        UpdateFlightPhase(ref config, earthScale, currentSpeed, currentAltitude, targetAltitude);
 
-        float3 toDestination = destinationPositionOnSphere - currentPositionOnSphere;
-        float3 tangentDirection = math.normalize(Vector3.ProjectOnPlane(toDestination, currentPositionOnSphere));
-
-        float3 forwardOnSphere = math.normalize(Vector3.ProjectOnPlane(planeNormal, currentPositionOnSphere));
-        float targetAngle = Vector3.SignedAngle(forwardOnSphere, tangentDirection, currentPositionOnSphere);
-
-        float angleRadians = Mathf.Acos(Vector3.Dot(planeNormal.normalized, currentPositionOnSphere));
-        float angleDegrees = angleRadians * Mathf.Rad2Deg;
-        float currentPitchAngle = 90f - angleDegrees;
-
-        float currentSpeed = math.length(velocity.Linear);
-        float currentAltitude = math.length(currentPosition - sphereCenter) - sphereRadius;
-
-        float targetAltitude = GetTargetAltitude(flightDataComponent, sphereRadius) * earthScale;
-
-        UpdateFlightPhase(ref flightDataComponent, earthScale, currentSpeed, currentAltitude, targetAltitude);
-
-        if (flightDataComponent.CurrentPhase == FlightPhase.Descent)
+        if (config.CurrentPhase == FlightPhase.Descent)
         {
             velocity.Linear = new float3(0, 0, 0);
             ECB.RemoveComponent<PlaneComponent>(entity);
             return;
         }
 
-        float targetSpeed = GetTargetSpeed(flightDataComponent) * earthScale;
-        targetAltitude = GetTargetAltitude(flightDataComponent, sphereRadius) * earthScale;
+        float targetSpeed = GetTargetSpeed(config) * earthScale;
+        targetAltitude = GetTargetAltitude(config, sphereRadius) * earthScale;
 
-        ApplyPitch(ref debugData, ref velocity, mass, earthScale, transform, flightDataComponent, DeltaTime, currentAltitude, targetAltitude, sphereCenter);
+        // --- 2. APPLY ENVIRONMENTAL FORCES (The "Brawn") ---
+        // These are the non-negotiable physics of being in an atmosphere.
+
+        // (A) GRAVITY: Always on, always pulls down.
+        // We apply this as an acceleration (m/s^2).
+        float3 gravityAccel = gravityDir * planetGravity; // Use a realistic 'G'
+        velocity.Linear += earthScale * gravityAccel * DeltaTime;
+
+        // (B) LIFT: The "magic" of wings. We'll simplify.
+        // Lift is proportional to speed-squared and pushes along the plane's *UP* vector.
+        // A more realistic model uses Angle of Attack, but this is far more stable.
+        float speedSqr = currentSpeed * currentSpeed;
+        float liftForce = config.LiftStrength * speedSqr;
+        float3 liftAccel = up * liftForce * mass.InverseMass;
+        velocity.Linear += earthScale * liftAccel * DeltaTime;
+
+        // (C) DRAG: Air resistance.
+        // Drag is proportional to speed-squared and pushes *against* the velocity vector.
+        float dragForce = config.DragCoefficient * speedSqr;
+        float3 dragAccel = -velocityDir * dragForce * mass.InverseMass;
+        velocity.Linear += earthScale * dragAccel * DeltaTime;
+
+
+        // --- 3. RUN AUTOPILOT "BRAIN" ---
+        // Now, we decide what the *controls* should be doing.
+        // We use simple P-controllers (like you had) to get a -1 to 1 input.
+
+        // (A) Thrust Controller: Tries to match TargetSpeed
+        float speedError = targetSpeed - currentSpeed;
+        float thrustInput = math.clamp(speedError * 0.1f, 0f, 1f); // Only thrust forward
+
+        // (B) Pitch Controller: Tries to match TargetAltitude
+        float altitudeError = targetAltitude - currentAltitude;
+        float pitchInput = math.clamp(altitudeError * 0.01f, -1f, 1f); // Tune the '0.01f' sensitivity
+
+        // (C) Roll Controller: Tries to stay level with the planet's surface
+        // We find the "roll error" by seeing how much our 'right' vector is pointing 'up'.
+        float rollError = math.dot(right, localUp);
+        float rollInput = math.clamp(-rollError * 2f, -1f, 1f); // Tune sensitivity
+
+        // (D) Yaw Controller: Tries to point at the target
+        // (This re-uses your old logic, which was correct!)
+        float3 forwardOnSphere = math.normalize(forward - math.dot(forward, localUp) * localUp);
+        float angleToTarget = Vector3.SignedAngle(forwardOnSphere, forwardOnSphere /*targetDirection*/, localUp);
+        float yawInput = math.clamp(angleToTarget * 0.05f, -1f, 1f); // Tune sensitivity
+
+
+        // --- 4. APPLY CONTROL FORCES (The "Brawn" part 2) ---
+        // The Brain has made its decisions. Now the Brawn executes them.
+
+        // (A) APPLY THRUST: Linear force along the plane's 'forward'.
+        float3 thrustForce = forward * thrustInput * config.MaxThrust;
+        float3 thrustAccel = thrustForce * mass.InverseMass;
+        velocity.Linear += earthScale * thrustAccel * DeltaTime;
+
+        // (B) APPLY TORQUES: Rotational forces.
+
+        // Pitch: Rotates around the 'right' vector
+        float3 pitchTorque = right * pitchInput * config.PitchStrength;
+
+        // Roll: Rotates around the 'forward' vector
+        float3 rollTorque = forward * rollInput * config.RollStrength;
+
+        // Yaw: Rotates around the 'up' vector
+        float3 yawTorque = up * yawInput * config.YawStrength;
+
+        // Apply all torques as angular acceleration
+        float3 totalTorque = (pitchTorque + rollTorque + yawTorque);
+        float3 angularAccel = mass.InverseInertia * totalTorque; // Use InverseInertia
+
+        velocity.Angular += earthScale * angularAccel * DeltaTime;
         
-        // ApplyRollStabilization(ref debugData, ref velocity, mass, transform, sphereCenter, flightDataComponent.RollStrength, DeltaTime);
-
-        ApplyForwardThrust(ref debugData, ref velocity, mass, earthScale, planeNormal, flightDataComponent.Thrust,
-            DeltaTime, currentSpeed, targetSpeed);
         
-
-        debugData.CurrentPosition = currentPosition;
-        debugData.CurrentPositionOnSphere = currentPositionOnSphere;
-        debugData.DestinationPositon = destinationPositon;
-        debugData.DestinationPositionOnSphere = destinationPositionOnSphere;
-        debugData.ToDestination = toDestination;
-        debugData.TangentDirection = tangentDirection;
-        debugData.ForwardOnSphere = forwardOnSphere;
-        debugData.AngleRadians = angleRadians;
-        debugData.AngleDegrees = angleDegrees;
-        debugData.CurrentPitchAngle = currentPitchAngle;
-        debugData.PlaneNormal = planeNormal;
-
+        debugData.PlanetCenter = planetCenter;
+        debugData.Position     = position;
+        debugData.ToPlanet     = toPlanet;
+        debugData.GravityDir   = gravityDir;
+        debugData.LocalUp      = localUp;
+        debugData.SphereRadius = sphereRadius;
+        debugData.EarthScale   = earthScale;
         debugData.CurrentAltitude = currentAltitude;
-        debugData.TargetAltitude = targetAltitude;
+        debugData.LinearVelocity = linearVelocity;
         debugData.CurrentSpeed = currentSpeed;
-        debugData.TargetSpeed = targetSpeed;
-        // debugData.CurrentAngle = ;
-        debugData.TargetAngle = targetAngle;
-        debugData.CurrentPitch = currentPitchAngle;
-        // debugData.TargetPitch;
-        debugData.InverseMass = mass.InverseMass;
-        debugData.EarthScale = earthScale;
+        debugData.VelocityDir  = velocityDir;
+        debugData.Forward      = forward;
+        debugData.Right        = right;
+        debugData.Up           = up;
+        debugData.TargetAltitude = targetAltitude;
+        debugData.TargetSpeed  = targetSpeed;
+        debugData.GravityAccel = gravityAccel;
+        debugData.SpeedSqr     = speedSqr;
+        debugData.LiftForce    = liftForce;
+        debugData.LiftAccel    = liftAccel;
+        debugData.DragForce    = dragForce;
+        debugData.DragAccel    = dragAccel;
+        debugData.SpeedError   = speedError;
+        debugData.ThrustInput  = thrustInput;
+        debugData.AltitudeError = altitudeError;
+        debugData.PitchInput   = pitchInput;
+        debugData.RollError    = rollError;
+        debugData.RollInput    = rollInput;
+        debugData.ForwardOnSphere = forwardOnSphere;
+        debugData.AngleToTarget = angleToTarget;
+        debugData.YawInput     = yawInput;
+        debugData.ThrustForce  = thrustForce;
+        debugData.ThrustAccel  = thrustAccel;
+        debugData.PitchTorque  = pitchTorque;
+        debugData.RollTorque   = rollTorque;
+        debugData.YawTorque    = yawTorque;
+        debugData.TotalTorque  = totalTorque;
+        debugData.AngularAccel = angularAccel;
     }
 
     private float GetTargetAltitude(in PlaneFlightDataComponent flightData, float sphereRadius)
@@ -162,249 +247,4 @@ public partial struct MovePlanes : IJobEntity
                 break;
         }
     }
-
-    private void ApplyForwardThrust(ref PlaneFlightDebugDataComponent debugData, ref PhysicsVelocity vel,
-        in PhysicsMass mass, float earthScale,
-        float3 forwardDirection,
-        float thrustForce, float deltaTime, float currentSpeed, float targetSpeed)
-    {
-        float thrustNewtons = (thrustForce * 1000f) * earthScale;
-        float3 thrustVector = forwardDirection * thrustNewtons;
-
-        float speedError = targetSpeed - currentSpeed;
-        float thrustInput = math.clamp(speedError / 50f, -1f, 1f);
-        float3 thrust = thrustInput * thrustVector;
-        float3 accelerationVector = thrust * mass.InverseMass;
-
-        vel.Linear += accelerationVector * deltaTime;
-
-        debugData.AccelerationVector = math.max(accelerationVector * deltaTime, vel.Linear);
-    }
-
-    private void ApplyPitch(ref PlaneFlightDebugDataComponent debugData, ref PhysicsVelocity vel, in PhysicsMass mass,
-        float earthScale, in LocalTransform transform,
-        in PlaneFlightDataComponent flightDataComponent, float deltaTime, float currentAltitude,
-        float targetAltitude, float3 planetCenter)
-    {
-        float3 rotationAxis = transform.Right();
-        float3 forward = transform.Forward();
-
-        // CORRECTED: Local "up" is radial direction from planet center
-        float3 toAircraft = transform.Position - planetCenter;
-        float3 localUp = math.normalize(toAircraft);
-        
-        float currentPitch = math.asin(math.clamp(math.dot(forward, localUp), -1f, 1f)); // Radians
-
-        float scaledPitchTorque = flightDataComponent.PitchStrength * earthScale;
-        float3 pitchVector = rotationAxis * scaledPitchTorque;
-
-        // Calculate desired pitch based on altitude error
-        float altitudeError = targetAltitude - currentAltitude;
-        float desiredPitchInput = math.clamp(altitudeError / 50f, -1, 1); // Adjust divisor for sensitivity
-
-        // Apply max climb angle constraint
-        float maxClimbAngleRad = math.radians(flightDataComponent.MaxClimbAngle);
-        float targetPitch = desiredPitchInput * maxClimbAngleRad;
-
-        // Clamp current pitch to max climb angle (prevent over-pitching)
-        float pitchError = targetPitch - currentPitch;
-        float finalPitchInput = math.clamp(pitchError * 2f, -1, 1); // Proportional control
-
-        // Only apply pitch if within climb angle limits
-        if (currentPitch > maxClimbAngleRad && desiredPitchInput > 0)
-        {
-            finalPitchInput = math.min(finalPitchInput, 0); // Don't pitch up more
-        }
-        else if (currentPitch < -maxClimbAngleRad && desiredPitchInput < 0)
-        {
-            finalPitchInput = math.max(finalPitchInput, 0); // Don't pitch down more
-        }
-
-        float3 proportionalTorque = -finalPitchInput * pitchVector;
-        
-        // Get the current angular velocity *around the pitch axis* (in rad/s)
-        float currentPitchVelocity = math.dot(vel.Angular, rotationAxis);
-        
-        // Apply a damping torque *opposite* to the current pitch velocity
-        // We scale it by the damping factor and the main torque strength
-        float3 dampingTorque = -rotationAxis * currentPitchVelocity * flightDataComponent.PitchDamping * scaledPitchTorque;
-        
-        float3 torque = proportionalTorque + dampingTorque;
-
-        // Use inertia tensor for angular acceleration
-        float3 angularAcceleration = mass.InverseInertia * torque;
-
-        vel.Angular += angularAcceleration * deltaTime;
-
-        // Debug data
-        debugData.RotationAxis = rotationAxis;
-        debugData.ScaledPitchTorque = scaledPitchTorque;
-        debugData.PitchVector = pitchVector;
-        debugData.AltitudeError = altitudeError;
-        debugData.PitchTorque = torque;
-        debugData.PitchAccelerationVector = angularAcceleration;
-        debugData.CurrentPitch = math.degrees(currentPitch);
-        debugData.TargetPitch = math.degrees(targetPitch);
-        debugData.DesiredPitchInput = desiredPitchInput;
-        debugData.FinalPitchInput = finalPitchInput;
-        debugData.LocalUp = localUp;
-        debugData.ForwardDotLocalUp = math.dot(forward, localUp);
-        debugData.RawCurrentPitch = math.asin(math.clamp(math.dot(forward, localUp), -1f, 1f));
-    }
-    
-    private void ApplyRollStabilization(ref PlaneFlightDebugDataComponent debugData, ref PhysicsVelocity vel, in PhysicsMass mass,
-        in LocalTransform transform, float3 planetCenter, float rollStrength, float deltaTime)
-    {
-        // Get the "correct" up vector (radial from planet)
-        float3 localUp = math.normalize(transform.Position - planetCenter);
-        
-        // Get the plane's current right vector
-        float3 planeRight = transform.Right();
-
-        // Calculate the roll error. 
-        // We dot the plane's right vector with the local up vector.
-        // If the plane is perfectly level, planeRight is perpendicular to localUp, so the dot product is 0.
-        // If it rolls left, planeRight points "up", dot is positive.
-        // If it rolls right, planeRight points "down", dot is negative.
-        float rollError = math.dot(planeRight, localUp);
-
-        // We apply torque around the plane's forward axis to correct this error.
-        // The -rollError is because a positive error (rolled left) needs negative torque to roll right.
-        float3 rollTorque = transform.Forward() * (-rollError * rollStrength);
-
-        float3 angularAcceleration = mass.InverseInertia * rollTorque;
-        vel.Angular += angularAcceleration * deltaTime;
-
-        debugData.RollError = rollError;
-        debugData.RollTorque = rollTorque;
-        debugData.RollAccelerationVector = angularAcceleration;
-    }
-
-//     float3 currentUp = math.normalize(currentPosition - sphereCenter);
-//     float3 currentForward = transform.Forward();
-//     float3 currentDirection = math.normalize(currentPosition - sphereCenter);
-//     float currentAltitude = math.length(currentPosition - sphereCenter) - sphereRadius;
-//     float currentSpeed = math.length(velocity.Linear);
-//
-//     float cruisingAltitude = sphereRadius * flightDataComponent.CruisingAltitudePercentage;
-//
-//     float3 targetDirectionOnSphere = GetGreatCircleDirection(currentPosition, plane.Dest, sphereCenter);
-//
-//     UpdateFlightPhase(ref flightDataComponent, plane, cruisingAltitude, currentPosition, currentAltitude);
-//     if (flightDataComponent.CurrentPhase == FlightPhase.Landing)
-//     {
-//         ECB.AddComponent(entity, new ShouldDespawnComponent());
-//         return;
-//     }
-//
-//     switch (flightDataComponent.CurrentPhase)
-//     {
-//         case FlightPhase.TakeOff:
-//             ApplyForceToVelocity(ref velocity, mass, flightDataComponent.Acceleration, DeltaTime, currentForward);
-//
-//             float takeoffLift = currentSpeed * 0.5f;
-//             ApplyForceToVelocity(ref velocity, mass, takeoffLift, DeltaTime, currentUp);
-//
-//             break;
-//         case FlightPhase.Climb:
-//             TurnTowardsTarget(flightDataComponent, ref velocity, mass, transform, targetDirectionOnSphere,
-//                 currentUp, DeltaTime);
-//
-//             ApplyThrust(ref velocity, mass, currentForward, currentSpeed, flightDataComponent.MaxSpeed,
-//                 flightDataComponent.Acceleration, DeltaTime);
-//
-//             float climbForce = flightDataComponent.ClimbRate * 50f;
-//             ApplyForceToVelocity(ref velocity, mass, climbForce, DeltaTime, currentUp);
-//             break;
-//         case FlightPhase.Cruise:
-//             TurnTowardsTarget(flightDataComponent, ref velocity, mass, transform, targetDirectionOnSphere,
-//                 currentUp, DeltaTime);
-//
-//             ApplyThrust(ref velocity, mass, currentForward, currentSpeed, flightDataComponent.MaxSpeed,
-//                 flightDataComponent.Acceleration, DeltaTime);
-//
-//             float altitudeError = cruisingAltitude - currentAltitude;
-//             float liftForce = altitudeError * 10f; // Proportional lift
-//             ApplyForceToVelocity(ref velocity, mass, liftForce, DeltaTime, currentUp);
-//             break;
-//     }
-// }
-//
-// private void TurnTowardsTarget(in PlaneFlightDataComponent flightDataComponent, ref PhysicsVelocity velocity,
-//     in PhysicsMass mass, in LocalTransform tranform, float3 targetDirection, float3 planetUpDirection,
-//     float deltaTime)
-// {
-//     float3 currentUp = tranform.Up();
-//     float3 currentForward = tranform.Forward();
-//
-//     float3 stabilityTorque = math.cross(currentUp, planetUpDirection) * flightDataComponent.StabilityStrength;
-//
-//     float3 projectedTarget = targetDirection - math.dot(targetDirection, currentUp) * currentUp;
-//     projectedTarget = math.normalize(projectedTarget);
-//
-//     float3 yawTorque = math.cross(currentForward, projectedTarget) * flightDataComponent.SteerStrength;
-//
-//     float3 totalTorque = stabilityTorque + yawTorque;
-//
-//     // apply steering / stability torques
-//     ApplyTorque(ref velocity, mass, totalTorque, deltaTime);
-//
-//     // apply exponential angular damping (avoids double-integrating damping as a torque)
-//     float dampingFactor = math.exp(-flightDataComponent.AngularDamping * deltaTime);
-//     velocity.Angular *= dampingFactor;
-// }
-//
-// // Simplified PID for thrust
-// void ApplyThrust(ref PhysicsVelocity vel, PhysicsMass mass, float3 currentDirection, float currentSpeed,
-//     float targetSpeed, float acceleration, float deltaTime)
-// {
-//     float error = targetSpeed - currentSpeed;
-//     // Simple P-controller: force is proportional to error
-//     float thrust = math.clamp(error, -1, 1) * acceleration;
-//     ApplyForceToVelocity(ref vel, mass, thrust, deltaTime, currentDirection);
-// }
-//
-// void ApplyTorque(ref PhysicsVelocity vel, in PhysicsMass mass, float3 torque, float deltaTime)
-// {
-//     vel.Angular += mass.InverseInertia * torque * deltaTime;
-// }
-//
-// private void UpdateFlightPhase(ref PlaneFlightDataComponent flightDataComponent, in PlaneComponent plane,
-//     float cruisingAltitude, float3 currentPosition, float currentAltitude)
-// {
-//     switch (flightDataComponent.CurrentPhase)
-//     {
-//         case FlightPhase.TakeOff:
-//             if (currentAltitude >= cruisingAltitude * 0.1f)
-//             {
-//                 flightDataComponent.CurrentPhase = FlightPhase.Cruise;
-//             }
-//
-//             break;
-//         case FlightPhase.Climb:
-//             if (currentAltitude >= cruisingAltitude * 0.95f)
-//             {
-//                 flightDataComponent.CurrentPhase = FlightPhase.Cruise;
-//             }
-//
-//             break;
-//         case FlightPhase.Cruise:
-//             float distanceToTarget = math.distance(currentPosition, plane.Dest);
-//             // if (distanceToTarget <= 1000f)
-//             // {
-//             //     flightDataComponent.CurrentPhase = FlightPhase.Descent;
-//             // }
-//
-//             break;
-//         case FlightPhase.Descent:
-//             if (currentAltitude <= currentAltitude * 0.1f)
-//             {
-//                 flightDataComponent.CurrentPhase = FlightPhase.Landing;
-//             }
-//
-//             break;
-//         case FlightPhase.Landing:
-//             break;
-//     }
-// }
 }

@@ -7,16 +7,14 @@ class PlaneFlightDataAuthoring : MonoBehaviour
     public float maxSpeed = 800f;          // m/s
     public float v1Speed = 70f;           // m/s
     
-    public float thrust = 35; // kN
+    public float maxThrust = 66; // kN
     public float cruisingAltitudePercentage = 0.5f;  // meters above planet surface
 
-    public float maxClimbAngle = 25f;
-    public float maxDescentAngle = 20f;
-    
+    public float liftStrength = 25f;
+    public float dragCoefficient = 0.05f;
     public float pitchStrength = 3000f;
-    public float pitchDampening = 0.2f;
     public float yawStrength = 2000f;
-    public float rollStrengh = 2000f;
+    public float rollStrength = 2000f;
     
     class Baker : Baker<PlaneFlightDataAuthoring>
     {
@@ -27,15 +25,13 @@ class PlaneFlightDataAuthoring : MonoBehaviour
             {
                 MaxSpeed = authoring.maxSpeed,
                 V1Speed = authoring.v1Speed,
-                Thrust = authoring.thrust,
+                MaxThrust = authoring.maxThrust,
                 CruisingAltitudePercentage = authoring.cruisingAltitudePercentage,
                 
-                MaxClimbAngle = authoring.maxClimbAngle,
-                MaxDescentAngle = authoring.maxDescentAngle,
-                
+                LiftStrength = authoring.liftStrength,
+                DragCoefficient = authoring.dragCoefficient,
                 PitchStrength = authoring.pitchStrength,
-                PitchDamping = authoring.pitchDampening,
-                RollStrength = authoring.rollStrengh,
+                RollStrength = authoring.rollStrength,
                 YawStrength = authoring.yawStrength,
                 
                 CurrentPhase = FlightPhase.Cruise
@@ -48,13 +44,12 @@ public struct PlaneFlightDataComponent : IComponentData
 {
     public float MaxSpeed;          // m/s
     public float V1Speed;           // m/s
-    public float Thrust ;           // kN
+    public float MaxThrust ;           // kN
     public float CruisingAltitudePercentage;  // Percentage of planet radius
-    public float MaxClimbAngle;
-    public float MaxDescentAngle;
 
+    public float LiftStrength;
+    public float DragCoefficient;
     public float PitchStrength;
-    public float PitchDamping;
     public float RollStrength;
     public float YawStrength;
     

@@ -44,12 +44,12 @@ partial struct PlaneCollisionSystem : ISystem
 
     }
 
-    struct PlaneCollisionJob : ITriggerEventsJob
+    struct PlaneCollisionJob : ICollisionEventsJob
     {
         public EntityCommandBuffer ECB;
         [ReadOnly] public ComponentLookup<PlaneComponent> PlaneComponentLookup;
 
-        public void Execute(TriggerEvent collisionEvent)
+        public void Execute(CollisionEvent collisionEvent)
         {
             var entityA = collisionEvent.EntityA;
             var entityB = collisionEvent.EntityB;

@@ -1,6 +1,5 @@
 using Unity.Entities;
 using Unity.Mathematics;
-using Unity.Physics.GraphicsIntegration;
 using UnityEngine;
 
 namespace Components
@@ -20,46 +19,42 @@ namespace Components
 
 public struct PlaneFlightDebugDataComponent : IComponentData
 {
-    public float3 CurrentPosition;
-    public float3 CurrentPositionOnSphere;
-    public float3 DestinationPositon;
-    public float3 DestinationPositionOnSphere;
-    public float3 ToDestination;
-    public float3 TangentDirection;
-    public float3 ForwardOnSphere;
-    public float AngleRadians;
-    public float AngleDegrees;
-    public float CurrentPitchAngle;
-    public float3 PlaneNormal;
-    
-    public float CurrentAltitude;
-    public float TargetAltitude;
-    public float CurrentSpeed;
-    public float TargetSpeed;
-    public float CurrentAngle;
-    public float3 TargetAngle;
-    public float CurrentPitch;
-    public float TargetPitch;
-    
-    public float3 AccelerationVector;
-    public float InverseMass;
-
-    public float EarthScale;
-
-    public float3 RotationAxis;
-    public float ScaledPitchTorque;
-    public float3 PitchVector;
-    public float AltitudeError;
-    public float3 PitchTorque;
-    public float3 PitchAccelerationVector;
-
-    public float DesiredPitchInput;
-    public float3 FinalPitchInput;
+    public float3 PlanetCenter;
+    public float3 Position;
+    public float3 ToPlanet;
+    public float3 GravityDir;
     public float3 LocalUp;
-    public float ForwardDotLocalUp;
-    public float RawCurrentPitch;
-
-    public float RollError;
+    public float  SphereRadius;
+    public float  EarthScale;
+    public float  CurrentAltitude;
+    public float3 LinearVelocity;
+    public float  CurrentSpeed;
+    public float3 VelocityDir;
+    public float3 Forward;
+    public float3 Right;
+    public float3 Up;
+    public float  TargetAltitude;
+    public float  TargetSpeed;
+    public float3 GravityAccel;
+    public float  SpeedSqr;
+    public float  LiftForce;
+    public float3 LiftAccel;
+    public float  DragForce;
+    public float3 DragAccel;
+    public float  SpeedError;
+    public float  ThrustInput;
+    public float  AltitudeError;
+    public float  PitchInput;
+    public float  RollError;
+    public float  RollInput;
+    public float3 ForwardOnSphere;
+    public float  AngleToTarget;
+    public float  YawInput;
+    public float3 ThrustForce;
+    public float3 ThrustAccel;
+    public float3 PitchTorque;
     public float3 RollTorque;
-    public float3 RollAccelerationVector;
+    public float3 YawTorque;
+    public float3 TotalTorque;
+    public float3 AngularAccel;
 }
