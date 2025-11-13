@@ -45,8 +45,7 @@ public partial struct PlaneSpawnSystem : ISystem
             ECB = ecb,
             Config = config,
             ElapsedTime = elapsedTime,
-            Airports = airports
-            
+            Airports = airports,
         }.Schedule(state.Dependency);
 
     }
@@ -66,6 +65,7 @@ public partial struct SpawnPlanes : IJobEntity
     public ConfigComponent Config;
     public double ElapsedTime;
     public NativeArray<LocalTransform> Airports;
+    
     private void Execute(ref AirportComponent sourceComponent, in LocalTransform sourceTransform)
     {
         if (ElapsedTime < sourceComponent.NextPlaneSpawnTime)
@@ -74,7 +74,7 @@ public partial struct SpawnPlanes : IJobEntity
         }
  
         var random = new Random((uint)ElapsedTime + 100);
-        sourceComponent.NextPlaneSpawnTime += random.NextDouble(2d, 10d);
+        sourceComponent.NextPlaneSpawnTime += random.NextDouble(100d, 1000d);
         
         Entity planeEntity = ECB.Instantiate(Config.PlanePrefab);
         

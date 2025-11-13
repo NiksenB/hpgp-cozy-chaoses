@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 1583514023987035447}
   - component: {fileID: 8391622327058057228}
   - component: {fileID: 8799460154018577018}
+  - component: {fileID: 4752107350994207818}
   m_Layer: 0
   m_Name: Plane
   m_TagString: Untagged
@@ -47,7 +48,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bec7379aea5215b45a79d8731e2eb730, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlaneAuthoring
-  Wings: {fileID: 0}
   dest:
     x: 0
     y: 0
@@ -250,6 +250,30 @@ MonoBehaviour:
         Tag07: 0
     m_SerializedVersion: 1
   m_SerializedVersion: 1
+--- !u!114 &4752107350994207818
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2895921821699853166}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 393a91caf7f20f07caeee838dac82e36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlaneFlightAuthoring
+  thrust: 66000
+  mass: 11000
+  v1Speed: 70
+  maxSpeed: 870
+  minAltitudeRatio: 0.3
+  maxAltitudeRatio: 0.8
+  pitchAgility: 0.5
+  maxPitchRate: 0.5
+  maxPitchAngle: 25
+  yawAgility: 0.5
+  maxYawRate: 0.5
+  descentStartDistance: 20000
 --- !u!1001 &5499284886446994782
 PrefabInstance:
   m_ObjectHideFlags: 0
