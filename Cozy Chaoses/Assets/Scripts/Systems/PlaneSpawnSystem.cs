@@ -2,6 +2,7 @@ using Unity.Entities;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Mathematics;
+using Unity.Physics.Authoring;
 using Unity.Transforms;
 using Unity.VisualScripting;
 using UnityEngine;
