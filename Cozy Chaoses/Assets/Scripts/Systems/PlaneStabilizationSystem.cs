@@ -19,7 +19,7 @@ namespace Systems
         {
             var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
                 .CreateCommandBuffer(state.WorldUnmanaged);
-            
+
             var deltaTime = SystemAPI.Time.DeltaTime;
 
             var transformLookup = SystemAPI.GetComponentLookup<LocalTransform>(isReadOnly: true);
@@ -47,14 +47,19 @@ public partial struct StabilizePlaneJob : IJobEntity
 
         // Get the guide rotation
         LocalTransform targetTransform = TransformLookup[stabilizer.TargetEntity];
-        quaternion desiredRotation = targetTransform.Rotation;
-        quaternion currentRotation = transform.Rotation;
+
+        // Ensure rotations are normalized to avoid "Input quaternion was not normalized"
+        quaternion desiredRotation = new quaternion(math.normalize(targetTransform.Rotation.value));
+        quaternion currentRotation = new quaternion(math.normalize(transform.Rotation.value));
 
         // Calculate the difference required to align
         quaternion delta = math.mul(math.inverse(currentRotation), desiredRotation);
-        float angle = 2f * math.acos(delta.value.w);
-        
-        float s = math.sqrt(1f - (delta.value.w * delta.value.w)); 
+
+        // Clamp w to avoid NaNs from acos due to floating point drift
+        float w = math.clamp(delta.value.w, -1f, 1f);
+        float angle = 2f * math.acos(w);
+
+        float s = math.sqrt(math.max(0f, 1f - (w * w)));
         float3 axis;
         if (s < 0.0001f)
         {
@@ -70,9 +75,9 @@ public partial struct StabilizePlaneJob : IJobEntity
         if (angle > math.PI) angle = -(2f * math.PI - angle);
 
         // angular velocity
-        float3 targetAngularVel = (math.mul(currentRotation, axis) * angle) * stabilizer.RotationSpeed;
+        float3 targetAngularVel = math.mul(currentRotation, axis) * angle * stabilizer.RotationSpeed;
 
         // dampening
-        velocity.Angular = math.lerp(velocity.Angular, targetAngularVel, DeltaTime * 5f); 
+        velocity.Angular = math.lerp(velocity.Angular, targetAngularVel, DeltaTime * 5f);
     }
 }
