@@ -130,7 +130,10 @@ MonoBehaviour:
     x: 0
     y: 0
     z: 0
-  controlPoint: {fileID: 0}
+  controlPoint:
+    x: 0
+    y: 0
+    z: 0
   duration: 10
   frequency: 2
   amplitude: 5
