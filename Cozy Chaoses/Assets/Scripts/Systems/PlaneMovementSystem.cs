@@ -53,33 +53,6 @@ public partial struct MovePlanes : IJobEntity
 
         float3 newPos = LineCalculator.Calculate(planePath, t);
 
-        // switch (planePath.Shape)
-        // {
-        //     case PathShape.Linear:
-        //         newPos = math.lerp(planePath.StartPoint, planePath.EndPoint, t);
-        //         break;
-        //
-        //     case PathShape.SineWave:
-        //         // Linear movement forward + Sine movement Up
-        //         float3 linearPos = math.lerp(planePath.StartPoint, planePath.EndPoint, t);
-        //         float sineOffset = math.sin(t * math.PI * 2 * planePath.Frequency) * planePath.Amplitude;
-        //         newPos = linearPos + (upDir * sineOffset);
-        //         break;
-            //
-            // case PathShape.Sigmoid:
-            //     // Sigmoid math: 1 / (1 + e^-x). We remap t from 0..1 to -6..6 for the curve
-            //     float k = -6f + (t * 12f); 
-            //     float sig = 1f / (1f + math.exp(-k));
-            //     newPos = math.lerp(path.StartPoint, path.EndPoint, sig);
-            //     break;
-            //
-            // case PathShape.Curve:
-            //     // Quadratic Bezier: (1-t)^2 * P0 + 2(1-t)t * P1 + t^2 * P2
-            //     float u = 1 - t;
-            //     newPos = (u * u * path.StartPoint) + (2 * u * t * path.ControlPoint) + (t * t * path.EndPoint);
-            //     break;
-        // }
-
         if (math.distancesq(newPos, transform.Position) > 0.0001f)
         {
             float3 direction = math.normalize(newPos - transform.Position);
