@@ -30,7 +30,7 @@ namespace DefaultNamespace
             float3 upDir = math.cross(rightDir, forwardDir);
             
             float3 linearPos = math.lerp(planePath.StartPoint, planePath.EndPoint, t);
-            float sineOffset = math.sin(t * math.PI * 2 * planePath.Frequency) * planePath.Amplitude;
+            float sineOffset = math.sin(t * math.PI * 2 * planePath.Frequency) * planePath.AmplitudeOrSteepness;
             return linearPos + (upDir * sineOffset);
         }
     }

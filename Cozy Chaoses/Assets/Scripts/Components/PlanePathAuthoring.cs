@@ -13,6 +13,7 @@ namespace Components
         public float duration = 10f;
         public float frequency = 2f;
         public float amplitude = 5f;
+        public float amplitudeOrSteepness = 5f;
         public float stabilizationSpeed = 10f;
         public GameObject planeObject; // Reference to the actual plane
 
@@ -44,7 +45,7 @@ namespace Components
                 ControlPoint = authoring.controlPoint,
                 Duration = authoring.duration,
                 Frequency = authoring.frequency,
-                Amplitude = authoring.amplitude,
+                AmplitudeOrSteepness = authoring.amplitudeOrSteepness,
                 ElapsedTime = 0f,
             };
         }
@@ -102,7 +103,7 @@ public struct PlanePathComponent : IComponentData
     // Configuration
     public float Duration; // How long the flight takes
     public float Frequency; // For Sine
-    public float Amplitude; // For Sine
+    public float AmplitudeOrSteepness; // For Sine/Sigmoid
 
     // Internal State
     public float ElapsedTime;
