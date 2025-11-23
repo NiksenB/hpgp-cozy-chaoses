@@ -38,6 +38,8 @@ public partial struct PlaneSpawnSystem : ISystem
             
             airports = query.ToComponentDataArray<LocalTransform>(Allocator.Persistent);
         }
+        
+        var planet = SystemAPI.GetSingleton<PlanetComponent>();
 
         var elapsedTime = SystemAPI.Time.ElapsedTime;
         
@@ -47,8 +49,8 @@ public partial struct PlaneSpawnSystem : ISystem
             Config = config,
             ElapsedTime = elapsedTime,
             Airports = airports,
+            Planet = planet
         }.Schedule(state.Dependency);
-
     }
 
     [BurstCompile]
@@ -66,6 +68,7 @@ public partial struct SpawnPlanes : IJobEntity
     public ConfigComponent Config;
     public double ElapsedTime;
     public NativeArray<LocalTransform> Airports;
+    public PlanetComponent Planet;
     
     private void Execute(ref AirportComponent sourceComponent, in LocalTransform sourceTransform)
     {
@@ -88,7 +91,30 @@ public partial struct SpawnPlanes : IJobEntity
 
         var dest = Airports[di].Position;
         
-        ECB.AddComponent(planeEntity, LocalTransform.FromPosition(sourceTransform.Position));
-        ECB.AddComponent(planeEntity, new PlaneComponent { Dest = dest });
+        Debug.Log(sourceTransform.Position);
+        
+        // Spawn a little above the airport
+        var up = math.normalize(sourceTransform.Position);
+        var spawnPosition = sourceTransform.Position + up * 1f;
+        
+        ECB.AddComponent(planeEntity, LocalTransform.FromPositionRotation(spawnPosition, sourceTransform.Rotation));
+        ECB.AddComponent(planeEntity, new PlaneComponent());
+        ECB.AddComponent(planeEntity, new PlanePathComponent
+        {
+            Shape = PathShape.Curve,
+            StartPoint = sourceTransform.Position,
+            EndPoint = dest,
+            ControlPoint = GetMidpoint(sourceTransform.Position, dest),
+            Duration = random.NextFloat(10f, 30f), // TODO: Make a function of distance
+        });
+    }
+    
+    private float3 GetMidpoint(float3 a, float3 b)
+    {
+        float3 mid = (a + b) / 2f;
+        float3 direction = math.normalize(mid);
+        float distanceFromCenter = math.length(mid);
+        float offset = Planet.Radius * 0.2f; // 20% of planet radius
+        return direction * (distanceFromCenter + offset);
     }
 }
