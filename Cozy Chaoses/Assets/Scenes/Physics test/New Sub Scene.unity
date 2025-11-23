@@ -159,6 +159,22 @@ PrefabInstance:
       propertyPath: AutoSetConnected
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1912986119047804761, guid: 8d6d61e6a987ac4218ff3b7346d988f7, type: 3}
+      propertyPath: shape
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1912986119047804761, guid: 8d6d61e6a987ac4218ff3b7346d988f7, type: 3}
+      propertyPath: endPoint.z
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 1912986119047804761, guid: 8d6d61e6a987ac4218ff3b7346d988f7, type: 3}
+      propertyPath: controlPoint.y
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 1912986119047804761, guid: 8d6d61e6a987ac4218ff3b7346d988f7, type: 3}
+      propertyPath: controlPoint.z
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 6355726901760819116, guid: 8d6d61e6a987ac4218ff3b7346d988f7, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

@@ -91,8 +91,6 @@ public partial struct SpawnPlanes : IJobEntity
 
         var dest = Airports[di].Position;
         
-        Debug.Log(sourceTransform.Position);
-        
         // Spawn a little above the airport
         var up = math.normalize(sourceTransform.Position);
         var spawnPosition = sourceTransform.Position + up * 1f;
