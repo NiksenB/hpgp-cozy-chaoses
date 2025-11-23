@@ -12,7 +12,7 @@ namespace DefaultNamespace
                 PathShape.Linear => CalculateLinear(planePath, t),
                 PathShape.SineWave => CalculateSineWave(planePath, t),
                 // PathShape.Sigmoid => expr,
-                // PathShape.Curve => expr,
+                PathShape.Curve => CalculateCurve(planePath, t),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
@@ -32,6 +32,13 @@ namespace DefaultNamespace
             float3 linearPos = math.lerp(planePath.StartPoint, planePath.EndPoint, t);
             float sineOffset = math.sin(t * math.PI * 2 * planePath.Frequency) * planePath.AmplitudeOrSteepness;
             return linearPos + (upDir * sineOffset);
+        }
+
+        protected static float3 CalculateCurve(PlanePathComponent planePath, float t)
+        {
+            // Quadratic Bezier
+            float u = 1 - t;
+            return (u * u * planePath.StartPoint) + (2 * u * t * planePath.ControlPoint) + (t * t * planePath.EndPoint);
         }
     }
 }
