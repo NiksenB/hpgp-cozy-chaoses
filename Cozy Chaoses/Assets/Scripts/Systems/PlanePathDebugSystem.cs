@@ -2,6 +2,7 @@ using DefaultNamespace;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
+using Unity.Transforms;
 using UnityEngine; // Required for Debug.DrawLine
 
 namespace Systems
@@ -32,7 +33,7 @@ namespace Systems
         {
             public EntityCommandBuffer ECB;
 
-            public void Execute(ref PlanePathComponent planePath)
+            public void Execute(in LocalTransform transform, ref PlanePathComponent planePath)
             {
                 Vector3 start = planePath.StartPoint;
 
@@ -47,6 +48,10 @@ namespace Systems
                     Debug.DrawLine(prevPos, currentPos, Color.cyan);
                     prevPos = currentPos;
                 }
+                
+                // Draw line up from transform position to indicate height
+                Debug.DrawLine(transform.Position, transform.Position + transform.Up() * 2f, Color.yellow);
+                Debug.DrawLine(transform.Position, transform.Position + transform.Forward() * 2f, Color.red);
             }
         }
     }

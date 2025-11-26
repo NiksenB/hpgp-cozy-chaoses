@@ -79,7 +79,7 @@ public partial struct SpawnPlanes : IJobEntity
         }
  
         var random = new Random((uint)ElapsedTime + 100);
-        sourceComponent.NextPlaneSpawnTime += random.NextDouble(100d, 1000d);
+        sourceComponent.NextPlaneSpawnTime += random.NextDouble(10d, 100d);
         
         Entity planeEntity = ECB.Instantiate(Config.PlanePrefab);
         
@@ -113,6 +113,6 @@ public partial struct SpawnPlanes : IJobEntity
         float3 direction = math.normalize(mid);
         float distanceFromCenter = math.length(mid);
         float offset = Planet.Radius * 0.2f; // 20% of planet radius
-        return direction * (distanceFromCenter + offset);
+        return direction * (Planet.Radius + distanceFromCenter + offset);
     }
 }

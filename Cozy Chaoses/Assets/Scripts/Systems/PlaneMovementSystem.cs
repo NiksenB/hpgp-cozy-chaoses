@@ -44,12 +44,19 @@ public partial struct MovePlanes : IJobEntity
     public float DeltaTime;
     public PlanetComponent Planet;
 
-    public void Execute(ref LocalTransform transform, ref PlanePathComponent planePath)
+    public void Execute(Entity entity, ref LocalTransform transform, ref PlanePathComponent planePath)
     {
         planePath.ElapsedTime += DeltaTime;
         
         // Normalized time (0 to 1)
         float t = math.clamp(planePath.ElapsedTime / planePath.Duration, 0f, 1f);
+        
+        // Placeholder for despawn behavior
+        if (t >= 1f)
+        {
+            ECB.AddComponent(entity, new ShouldDespawnComponent());
+            return;
+        }
 
         float3 newPos = LineCalculator.Calculate(planePath, t);
 
@@ -62,4 +69,5 @@ public partial struct MovePlanes : IJobEntity
 
         transform.Position = newPos;
     }
+    
 }

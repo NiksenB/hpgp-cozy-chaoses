@@ -12,9 +12,7 @@ namespace Components
         public float3 controlPoint; // Optional for curves
         public float duration = 10f;
         public float frequency = 2f;
-        // public float amplitude = 5f;
         public float amplitudeOrSteepness = 5f;
-        // public float stabilizationSpeed = 10f;
 
         private class PlanePathAuthoringBaker : Baker<PlanePathAuthoring>
         {
@@ -112,4 +110,9 @@ public struct PlaneStabilizer : IComponentData
 {
     public Entity TargetEntity;
     public float RotationSpeed;
+    public float Damping;
+    public float MaxAngularSpeed;
+    public float ResponseSpeed;
+    public float ForwardWeight;
+    public float UpWeight;
 }

@@ -4,6 +4,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Transforms;
+using UnityEngine;
 
 namespace Systems
 {
@@ -12,21 +13,17 @@ namespace Systems
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
+            state.RequireForUpdate<PlaneStabilizer>();
         }
 
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
-                .CreateCommandBuffer(state.WorldUnmanaged);
-
             var deltaTime = SystemAPI.Time.DeltaTime;
-
             var transformLookup = SystemAPI.GetComponentLookup<LocalTransform>(isReadOnly: true);
 
             state.Dependency = new StabilizePlaneJob
             {
-                ECB = ecb,
                 TransformLookup = transformLookup,
                 DeltaTime = deltaTime
             }.Schedule(state.Dependency);
@@ -34,50 +31,106 @@ namespace Systems
     }
 }
 
-[BurstCompile]
+// [BurstCompile]
 public partial struct StabilizePlaneJob : IJobEntity
 {
     [ReadOnly] public ComponentLookup<LocalTransform> TransformLookup;
-    public EntityCommandBuffer ECB;
     public float DeltaTime;
 
     public void Execute(ref PhysicsVelocity velocity, in LocalTransform transform, in PlaneStabilizer stabilizer)
     {
-        if (!TransformLookup.HasComponent(stabilizer.TargetEntity)) return;
+   if (!TransformLookup.HasComponent(stabilizer.TargetEntity)) return;
 
-        // Get the guide rotation
         LocalTransform targetTransform = TransformLookup[stabilizer.TargetEntity];
 
-        // Ensure rotations are normalized to avoid "Input quaternion was not normalized"
-        quaternion desiredRotation = new quaternion(math.normalize(targetTransform.Rotation.value));
-        quaternion currentRotation = new quaternion(math.normalize(transform.Rotation.value));
+        quaternion currentRotation = math.normalizesafe(transform.Rotation);
+        quaternion targetRotation = math.normalizesafe(targetTransform.Rotation);
+        
+        DrawDebug(transform, currentRotation, targetRotation);
 
-        // Calculate the difference required to align
-        quaternion delta = math.mul(math.inverse(currentRotation), desiredRotation);
+        // Get actual direction vectors in world space
+        float3 currentForward = math.mul(currentRotation, new float3(0, 0, 1));
+        float3 currentUp = math.mul(currentRotation, new float3(0, 1, 0));
+        
+        float3 targetForward = math.mul(targetRotation, new float3(0, 0, 1));
+        float3 targetUp = math.mul(targetRotation, new float3(0, 1, 0));
 
-        // Clamp w to avoid NaNs from acos due to floating point drift
-        float w = math.clamp(delta.value.w, -1f, 1f);
-        float angle = 2f * math.acos(w);
+        float3 angularError = float3.zero;
 
-        float s = math.sqrt(math.max(0f, 1f - (w * w)));
-        float3 axis;
-        if (s < 0.0001f)
+        // Forward alignment
+        float3 forwardCross = math.cross(currentForward, targetForward);
+        float forwardDot = math.dot(currentForward, targetForward);
+        
+        float forwardSinAngle = math.length(forwardCross);
+        if (forwardSinAngle > 0.0001f)
         {
-            axis = new float3(1f, 0f, 0f);
-            angle = 0f;
+            float3 forwardAxis = forwardCross / forwardSinAngle;
+            float forwardAngle = math.atan2(forwardSinAngle, forwardDot);
+            angularError += forwardAxis * forwardAngle * stabilizer.ForwardWeight;
         }
-        else
+
+        // Up alignment
+        float3 targetUpProjected = targetUp - currentForward * math.dot(targetUp, currentForward);
+        float targetUpProjLength = math.length(targetUpProjected);
+        
+        if (targetUpProjLength > 0.0001f)
         {
-            axis = delta.value.xyz / s;
+            targetUpProjected /= targetUpProjLength;
+            
+            // Same for current up
+            float3 currentUpProjected = currentUp - currentForward * math.dot(currentUp, currentForward);
+            float currentUpProjLength = math.length(currentUpProjected);
+            
+            if (currentUpProjLength > 0.0001f)
+            {
+                currentUpProjected /= currentUpProjLength;
+                
+                float3 upCross = math.cross(currentUpProjected, targetUpProjected);
+                float upDot = math.dot(currentUpProjected, targetUpProjected);
+                
+                float upSinAngle = math.length(upCross);
+                if (upSinAngle > 0.0001f)
+                {
+                    float3 upAxis = upCross / upSinAngle;
+                    float upAngle = math.atan2(upSinAngle, upDot);
+                    angularError += upAxis * upAngle * stabilizer.UpWeight;
+                }
+            }
         }
 
-        // angle wrapping
-        if (angle > math.PI) angle = -(2f * math.PI - angle);
+        // Check if we're close enough to stop
+        if (math.lengthsq(angularError) < 0.000001f)
+        {
+            velocity.Angular = math.lerp(velocity.Angular, float3.zero, math.saturate(stabilizer.Damping * DeltaTime));
+            return;
+        }
 
-        // angular velocity
-        float3 targetAngularVel = math.mul(currentRotation, axis) * angle * stabilizer.RotationSpeed;
+        float3 proportionalTerm = angularError * stabilizer.RotationSpeed;
+        float3 derivativeTerm = velocity.Angular * stabilizer.Damping;
+        
+        float3 targetAngularVelocity = proportionalTerm - derivativeTerm;
+        
+        // Clamp maximum angular velocity
+        float speed = math.length(targetAngularVelocity);
+        if (speed > stabilizer.MaxAngularSpeed)
+        {
+            targetAngularVelocity = (targetAngularVelocity / speed) * stabilizer.MaxAngularSpeed;
+        }
 
-        // dampening
-        velocity.Angular = math.lerp(velocity.Angular, targetAngularVel, DeltaTime * 5f);
+        float blendFactor = 1f - math.exp(-stabilizer.ResponseSpeed * DeltaTime);
+        velocity.Angular = math.lerp(velocity.Angular, targetAngularVelocity, blendFactor);
+    }
+
+    public void DrawDebug(LocalTransform transform, quaternion currentRotation, quaternion targetRotation)
+    {
+        float3 planeForward = math.mul(currentRotation, new float3(0, 0, 1));
+        float3 planeUp = math.mul(currentRotation, new float3(0, 1, 0));
+        float3 targetForward = math.mul(targetRotation, new float3(0, 0, 1));
+        float3 targetUp = math.mul(targetRotation, new float3(0, 1, 0));
+
+        Debug.DrawRay(transform.Position, planeForward * 2f, Color.blue);   // Plane forward
+        Debug.DrawRay(transform.Position, planeUp * 2f, Color.green);       // Plane up
+        Debug.DrawRay(transform.Position, targetForward * 2f, Color.cyan);  // Target forward
+        Debug.DrawRay(transform.Position, targetUp * 2f, Color.yellow);     // Target up
     }
 }
