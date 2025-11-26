@@ -31,10 +31,8 @@ namespace Systems
                     continue;
                 }
                 
-                Debug.Log("Trying to add PlaneStabilizer to plane entity: " + planeEntity);
                 if (planeEntity != Entity.Null)
                 {
-                    Debug.Log("Adding PlaneStabilizer to plane entity: " + planeEntity);
                     ecb.AddComponent(planeEntity, new PlaneStabilizer
                     {
                         TargetEntity = entity, // Point back to the guide
