@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3962010513085034187}
   - component: {fileID: 3745123210646323921}
   - component: {fileID: 1912986119047804761}
+  - component: {fileID: 3497364063022939769}
   m_Layer: 0
   m_Name: GuideAndPlane
   m_TagString: Untagged
@@ -137,10 +138,20 @@ MonoBehaviour:
     z: 0
   duration: 10
   frequency: 2
-  amplitude: 5
   amplitudeOrSteepness: 5
-  stabilizationSpeed: 10
   planeObject: {fileID: 5704863114601971215}
+--- !u!114 &3497364063022939769
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9146640197352250829}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c16549610bfe4458aa9389201d072bb6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Entities.Hybrid::Unity.Entities.Hybrid.Baking.LinkedEntityGroupAuthoring
 --- !u!1001 &4893960439045096286
 PrefabInstance:
   m_ObjectHideFlags: 0
