@@ -21,6 +21,7 @@ public partial struct PlaneSpawnSystem : ISystem
         state.RequireForUpdate<ConfigComponent>();
         state.RequireForUpdate<PlanetComponent>();
         state.RequireForUpdate<AirportComponent>();
+        
     }
 
     [BurstCompile]
@@ -42,14 +43,14 @@ public partial struct PlaneSpawnSystem : ISystem
         var planet = SystemAPI.GetSingleton<PlanetComponent>();
 
         var elapsedTime = SystemAPI.Time.ElapsedTime;
-        
+
         state.Dependency = new SpawnPlanes
         {
             ECB = ecb,
             Config = config,
             ElapsedTime = elapsedTime,
             Airports = airports,
-            Planet = planet
+            Planet = planet,
         }.Schedule(state.Dependency);
     }
 
@@ -96,8 +97,7 @@ public partial struct SpawnPlanes : IJobEntity
         var spawnPosition = sourceTransform.Position + up * 1f;
         
         ECB.AddComponent(planeEntity, LocalTransform.FromPositionRotation(spawnPosition, sourceTransform.Rotation));
-        ECB.AddComponent(planeEntity, new PlaneComponent());
-        ECB.AddComponent(planeEntity, new PlanePathComponent
+        ECB.SetComponent(planeEntity, new PlanePathComponent
         {
             Shape = PathShape.Curve,
             StartPoint = sourceTransform.Position,

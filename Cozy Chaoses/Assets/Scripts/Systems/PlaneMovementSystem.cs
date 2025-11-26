@@ -14,7 +14,7 @@ public partial struct PlaneMovementSystem : ISystem
     public void OnCreate(ref SystemState state)
     {
         state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>();
-        // state.RequireForUpdate<PlanetComponent>();
+        state.RequireForUpdate<PlanetComponent>();
         // state.RequireForUpdate<ConfigComponent>();
     }
 
@@ -23,26 +23,26 @@ public partial struct PlaneMovementSystem : ISystem
     {
         var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
             .CreateCommandBuffer(state.WorldUnmanaged);
-        // var planet = SystemAPI.GetSingleton<PlanetComponent>();
+        var planet = SystemAPI.GetSingleton<PlanetComponent>();
         var deltaTime = SystemAPI.Time.DeltaTime;
 
         state.Dependency = new MovePlanes
         {
             ECB = ecb,
             DeltaTime = deltaTime,
-            // Planet = planet
+            Planet = planet
         }.Schedule(state.Dependency);
     }
 }
 
 [BurstCompile]
-// [WithAll(typeof(PlaneComponent))]
+[WithAll(typeof(PlaneComponent))]
 [WithNone(typeof(ShouldDespawnComponent))]
 public partial struct MovePlanes : IJobEntity
 {
     public EntityCommandBuffer ECB;
     public float DeltaTime;
-    // public PlanetComponent Planet;
+    public PlanetComponent Planet;
 
     public void Execute(ref LocalTransform transform, ref PlanePathComponent planePath)
     {
@@ -56,7 +56,8 @@ public partial struct MovePlanes : IJobEntity
         if (math.distancesq(newPos, transform.Position) > 0.0001f)
         {
             float3 direction = math.normalize(newPos - transform.Position);
-            transform.Rotation = quaternion.LookRotationSafe(direction, math.up());
+            float3 surfaceUp = math.normalize(newPos);
+            transform.Rotation = quaternion.LookRotationSafe(direction, surfaceUp);
         }
 
         transform.Position = newPos;

@@ -12,10 +12,9 @@ namespace Components
         public float3 controlPoint; // Optional for curves
         public float duration = 10f;
         public float frequency = 2f;
-        public float amplitude = 5f;
+        // public float amplitude = 5f;
         public float amplitudeOrSteepness = 5f;
-        public float stabilizationSpeed = 10f;
-        public GameObject planeObject; // Reference to the actual plane
+        // public float stabilizationSpeed = 10f;
 
         private class PlanePathAuthoringBaker : Baker<PlanePathAuthoring>
         {
@@ -24,9 +23,6 @@ namespace Components
                 var entity = GetEntity(TransformUsageFlags.Dynamic);
                 
                 var component = GetPathComponent(authoring);
-
-                var planeEntity = GetEntity(authoring.planeObject, TransformUsageFlags.Dynamic);
-                component.PlaneEntity = planeEntity;
 
                 // Add Path Data
                 AddComponent(entity, component);
@@ -98,7 +94,6 @@ public struct PlanePathComponent : IComponentData
     public float3 StartPoint;
     public float3 EndPoint;
     public float3 ControlPoint; // For Bezier/Curve
-    public Entity PlaneEntity;
 
     // Configuration
     public float Duration; // How long the flight takes
