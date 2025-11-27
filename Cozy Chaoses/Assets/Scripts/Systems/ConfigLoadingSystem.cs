@@ -58,7 +58,7 @@ namespace Systems
             }
             else
             {
-                Debug.LogError("Config file not found at " + configFilePath + ". Creating default config file.");
+                Debug.LogWarning("Config file not found at " + configFilePath + ". Creating default config file.");
 
                 configData = GetDefaultConfig();
                 string jsonString = JsonUtility.ToJson(configData, true);
