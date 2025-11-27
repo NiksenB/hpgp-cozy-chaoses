@@ -109,10 +109,4 @@ public struct GuideTargetTag : IComponentData
 public struct PlaneStabilizer : IComponentData
 {
     public Entity TargetEntity;
-    public float RotationSpeed;
-    public float Damping;
-    public float MaxAngularSpeed;
-    public float ResponseSpeed;
-    public float ForwardWeight;
-    public float UpWeight;
 }
