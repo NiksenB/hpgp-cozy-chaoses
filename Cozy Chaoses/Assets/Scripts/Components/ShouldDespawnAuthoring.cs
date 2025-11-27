@@ -3,19 +3,16 @@ using UnityEngine;
 
 class ShouldDespawnAuthoring : MonoBehaviour
 {
-    
-}
-
-class ShouldDespawnAuthoringBaker : Baker<ShouldDespawnAuthoring>
-{
-    public override void Bake(ShouldDespawnAuthoring authoring)
+    class Baker : Baker<ShouldDespawnAuthoring>
     {
-        var entity = GetEntity(TransformUsageFlags.Dynamic);
-        AddComponent<ShouldDespawnComponent>(entity);
+        public override void Bake(ShouldDespawnAuthoring authoring)
+        {
+            var entity = GetEntity(TransformUsageFlags.Dynamic);
+            AddComponent<ShouldDespawnTag>(entity);
+        }
     }
 }
 
-public struct ShouldDespawnComponent : IComponentData
+public struct ShouldDespawnTag : IComponentData
 {
-    
 }

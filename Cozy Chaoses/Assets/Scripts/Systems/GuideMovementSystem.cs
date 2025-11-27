@@ -36,7 +36,7 @@ public partial struct GuideMovementSystem : ISystem
 
 [BurstCompile]
 [WithAll(typeof(GuideComponent))]
-[WithNone(typeof(ShouldDespawnComponent))]
+[WithNone(typeof(ShouldDespawnTag))]
 public partial struct MoveGuidesJob : IJobEntity
 {
     public EntityCommandBuffer ECB;
@@ -53,7 +53,7 @@ public partial struct MoveGuidesJob : IJobEntity
         // Placeholder for despawn behavior
         if (t >= 1f)
         {
-            ECB.AddComponent(entity, new ShouldDespawnComponent());
+            ECB.AddComponent(entity, new ShouldDespawnTag());
             return;
         }
 

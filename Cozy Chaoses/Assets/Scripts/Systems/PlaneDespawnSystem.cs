@@ -29,7 +29,7 @@ public partial struct PlaneDespawnSystem : ISystem
 }
 
 [BurstCompile]
-[WithAll(typeof(ShouldDespawnComponent))]
+[WithAll(typeof(ShouldDespawnTag))]
 public partial struct DespawnPlanes : IJobEntity
 {
     public EntityCommandBuffer ECB;
