@@ -1,3 +1,4 @@
+using System.IO;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Transforms;
@@ -11,42 +12,51 @@ namespace Systems
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
-            state.RequireForUpdate<ConfigComponent>();
+            state.RequireForUpdate<PrefabConfigComponent>();
         }
 
-        [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             state.Enabled = false;
 
             ConfigFileData configData = GetConfig();
-            Debug.Log(configData);
-            Debug.Log("Loaded Config: AirportCount = " + configData.airportCount + ", PlanetRadius = " + configData.planetRadius);
-            // Get the ConfigComponent singleton
-            RefRW<ConfigComponent> entity = SystemAPI.GetSingletonRW<ConfigComponent>();
-            entity.ValueRW.AirportCount = configData.airportCount;
-            entity.ValueRW.PlanetRadius = configData.planetRadius;
+            
+            var entity = SystemAPI.GetSingletonEntity<PrefabConfigComponent>();
+            PrefabConfigComponent prefabConfig = SystemAPI.GetSingleton<PrefabConfigComponent>();
+
+            state.EntityManager.AddComponentData(entity, new ConfigComponent
+            {
+                PlanePrefab = prefabConfig.PlanePrefab,
+                
+                AirportPrefab = prefabConfig.AirportPrefab,
+                AirportCount = configData.airportCount,
+                
+                PlanetPrefab = prefabConfig.PlanetPrefab,
+                PlanetRadius = configData.planetRadius
+            });
+            state.EntityManager.RemoveComponent<PrefabConfigComponent>(entity);
         }
         
         private ConfigFileData GetConfig()
         {
             // Get the location of the application executable
             string currDir = System.Environment.CurrentDirectory;
-            string configFilePath = System.IO.Path.Combine(currDir, "config.json");
+            string configFilePath = Path.Combine(currDir, "config.json");
             
             ConfigFileData configData;
             
-            if (System.IO.File.Exists(configFilePath))
+            if (File.Exists(configFilePath))
             {
                 string jsonString = System.IO.File.ReadAllText(configFilePath);
                 configData = JsonUtility.FromJson<ConfigFileData>(jsonString);
             }
             else
             {
+                Debug.LogError("Config file not found at " + configFilePath + ". Creating default config file.");
 
                 configData = GetDefaultConfig();
                 string jsonString = JsonUtility.ToJson(configData, true);
-                System.IO.File.WriteAllText(configFilePath, jsonString);
+                File.WriteAllText(configFilePath, jsonString);
             }
 
             return configData;
@@ -64,7 +74,7 @@ namespace Systems
     
     struct ConfigFileData
     {
-        public float planetRadius;
         public int airportCount;
+        public float planetRadius;
     }
 }

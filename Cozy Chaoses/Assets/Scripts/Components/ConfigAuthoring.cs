@@ -12,7 +12,7 @@ public class ConfigAuthoring : MonoBehaviour
         public override void Bake(ConfigAuthoring authoring)
         {
             var entity = GetEntity(authoring, TransformUsageFlags.None);
-            AddComponent(entity, new ConfigComponent
+            AddComponent(entity, new PrefabConfigComponent
             {
                 PlanetPrefab = GetEntity(authoring.planetPrefab, TransformUsageFlags.Dynamic),
                 AirportPrefab = GetEntity(authoring.airportPrefab, TransformUsageFlags.Dynamic),
@@ -22,11 +22,20 @@ public class ConfigAuthoring : MonoBehaviour
     }
 }
 
-public struct ConfigComponent : IComponentData
+public struct PrefabConfigComponent : IComponentData
 {
     public Entity PlanePrefab;
     public Entity AirportPrefab;
     public Entity PlanetPrefab;
-    public float PlanetRadius;
+}
+
+public struct ConfigComponent : IComponentData
+{
+    public Entity PlanePrefab;
+    
+    public Entity AirportPrefab;
     public int AirportCount;
+    
+    public Entity PlanetPrefab;
+    public float PlanetRadius;
 }
