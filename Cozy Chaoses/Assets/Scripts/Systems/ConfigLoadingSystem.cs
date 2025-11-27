@@ -27,6 +27,12 @@ namespace Systems
             state.EntityManager.AddComponentData(entity, new ConfigComponent
             {
                 PlanePrefab = prefabConfig.PlanePrefab,
+                PlaneRotationSpeed = configData.planeRotationSpeed,
+                PlaneDamping = configData.planeDamping,
+                PlaneMaxAngularSpeed = configData.planeMaxAngularSpeed,
+                PlaneResponseSpeed = configData.planeResponseSpeed,
+                PlaneForwardWeight = configData.planeForwardWeight,
+                PlaneUpWeight = configData.planeUpWeight,
                 
                 AirportPrefab = prefabConfig.AirportPrefab,
                 AirportCount = configData.airportCount,
@@ -67,7 +73,13 @@ namespace Systems
             return new ConfigFileData
             {
                 airportCount = 25,
-                planetRadius = 100f
+                planetRadius = 100f,
+                planeRotationSpeed = 6f,
+                planeDamping = 7f,
+                planeMaxAngularSpeed = 6f,
+                planeResponseSpeed = 8f,
+                planeForwardWeight = 1.0f,
+                planeUpWeight = 0.5f,
             };
         }
     }
@@ -76,5 +88,12 @@ namespace Systems
     {
         public int airportCount;
         public float planetRadius;
+        
+        public float planeRotationSpeed;
+        public float planeDamping;
+        public float planeMaxAngularSpeed;
+        public float planeResponseSpeed;
+        public float planeForwardWeight;
+        public float planeUpWeight;
     }
 }
