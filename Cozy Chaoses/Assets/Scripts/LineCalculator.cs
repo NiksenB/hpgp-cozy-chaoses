@@ -5,40 +5,40 @@ namespace DefaultNamespace
 {
     public class LineCalculator
     {
-        public static float3 Calculate(PlanePathComponent planePath, float t)
+        public static float3 Calculate(GuidePathComponent guidePath, float t)
         {
-            return planePath.Shape switch
+            return guidePath.Shape switch
             {
-                PathShape.Linear => CalculateLinear(planePath, t),
-                PathShape.SineWave => CalculateSineWave(planePath, t),
+                PathShape.Linear => CalculateLinear(guidePath, t),
+                PathShape.SineWave => CalculateSineWave(guidePath, t),
                 // PathShape.Sigmoid => expr,
-                PathShape.Curve => CalculateCurve(planePath, t),
+                PathShape.Curve => CalculateCurve(guidePath, t),
                 _ => throw new ArgumentOutOfRangeException()
             };
         }
         
-        protected static float3 CalculateLinear(PlanePathComponent planePath, float t)
+        protected static float3 CalculateLinear(GuidePathComponent guidePath, float t)
         {
-            return math.lerp(planePath.StartPoint, planePath.EndPoint, t);
+            return math.lerp(guidePath.StartPoint, guidePath.EndPoint, t);
         }
 
-        protected static float3 CalculateSineWave(PlanePathComponent planePath, float t)
+        protected static float3 CalculateSineWave(GuidePathComponent guidePath, float t)
         {
             
-            float3 forwardDir = math.normalize(planePath.EndPoint - planePath.StartPoint);
+            float3 forwardDir = math.normalize(guidePath.EndPoint - guidePath.StartPoint);
             float3 rightDir = math.cross(forwardDir, math.up());
             float3 upDir = math.cross(rightDir, forwardDir);
             
-            float3 linearPos = math.lerp(planePath.StartPoint, planePath.EndPoint, t);
-            float sineOffset = math.sin(t * math.PI * 2 * planePath.Frequency) * planePath.AmplitudeOrSteepness;
+            float3 linearPos = math.lerp(guidePath.StartPoint, guidePath.EndPoint, t);
+            float sineOffset = math.sin(t * math.PI * 2 * guidePath.Frequency) * guidePath.AmplitudeOrSteepness;
             return linearPos + (upDir * sineOffset);
         }
 
-        protected static float3 CalculateCurve(PlanePathComponent planePath, float t)
+        protected static float3 CalculateCurve(GuidePathComponent guidePath, float t)
         {
             // Quadratic Bezier
             float u = 1 - t;
-            return (u * u * planePath.StartPoint) + (2 * u * t * planePath.ControlPoint) + (t * t * planePath.EndPoint);
+            return (u * u * guidePath.StartPoint) + (2 * u * t * guidePath.ControlPoint) + (t * t * guidePath.EndPoint);
         }
     }
 }

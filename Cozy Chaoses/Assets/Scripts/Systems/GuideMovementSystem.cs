@@ -8,14 +8,13 @@ using Unity.Physics.Authoring;
 using Unity.Transforms;
 using UnityEngine;
 
-public partial struct PlaneMovementSystem : ISystem
+public partial struct GuideMovementSystem : ISystem
 {
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
         state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>();
         state.RequireForUpdate<PlanetComponent>();
-        // state.RequireForUpdate<ConfigComponent>();
     }
 
     [BurstCompile]
@@ -26,7 +25,7 @@ public partial struct PlaneMovementSystem : ISystem
         var planet = SystemAPI.GetSingleton<PlanetComponent>();
         var deltaTime = SystemAPI.Time.DeltaTime;
 
-        state.Dependency = new MovePlanes
+        state.Dependency = new MoveGuidesJob
         {
             ECB = ecb,
             DeltaTime = deltaTime,
@@ -36,20 +35,20 @@ public partial struct PlaneMovementSystem : ISystem
 }
 
 [BurstCompile]
-[WithAll(typeof(PlaneComponent))]
+[WithAll(typeof(GuideComponent))]
 [WithNone(typeof(ShouldDespawnComponent))]
-public partial struct MovePlanes : IJobEntity
+public partial struct MoveGuidesJob : IJobEntity
 {
     public EntityCommandBuffer ECB;
     public float DeltaTime;
     public PlanetComponent Planet;
 
-    public void Execute(Entity entity, ref LocalTransform transform, ref PlanePathComponent planePath)
+    public void Execute(Entity entity, ref LocalTransform transform, ref GuidePathComponent guidePath)
     {
-        planePath.ElapsedTime += DeltaTime;
+        guidePath.ElapsedTime += DeltaTime;
         
         // Normalized time (0 to 1)
-        float t = math.clamp(planePath.ElapsedTime / planePath.Duration, 0f, 1f);
+        float t = math.clamp(guidePath.ElapsedTime / guidePath.Duration, 0f, 1f);
         
         // Placeholder for despawn behavior
         if (t >= 1f)
@@ -58,7 +57,7 @@ public partial struct MovePlanes : IJobEntity
             return;
         }
 
-        float3 newPos = LineCalculator.Calculate(planePath, t);
+        float3 newPos = LineCalculator.Calculate(guidePath, t);
 
         if (math.distancesq(newPos, transform.Position) > 0.0001f)
         {

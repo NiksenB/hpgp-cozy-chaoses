@@ -224,6 +224,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 744e01d3d39888e4bb092f1d04f82869, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4556755570126866011}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 744e01d3d39888e4bb092f1d04f82869, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3478816102894579238}
   m_SourcePrefab: {fileID: 100100000, guid: 744e01d3d39888e4bb092f1d04f82869, type: 3}
 --- !u!4 &4927059395845842101 stripped
 Transform:
@@ -286,3 +289,15 @@ MonoBehaviour:
     Tag05: 0
     Tag06: 0
     Tag07: 0
+--- !u!114 &3478816102894579238
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5704863114601971215}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9642b9a7479847d78092f432ee80f044, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Components.PlaneTagAuthoring

@@ -1,3 +1,4 @@
+using Components;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -13,7 +14,7 @@ namespace Systems
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
-            state.RequireForUpdate<PlaneStabilizer>();
+            state.RequireForUpdate<PlaneStabilizerComponent>();
         }
 
         [BurstCompile]
@@ -37,11 +38,11 @@ public partial struct StabilizePlaneJob : IJobEntity
     [ReadOnly] public ComponentLookup<LocalTransform> TransformLookup;
     public float DeltaTime;
 
-    public void Execute(ref PhysicsVelocity velocity, in LocalTransform transform, in PlaneStabilizer stabilizer)
+    public void Execute(ref PhysicsVelocity velocity, in LocalTransform transform, in PlaneStabilizerComponent planeStabilizerComponent)
     {
-   if (!TransformLookup.HasComponent(stabilizer.TargetEntity)) return;
+   if (!TransformLookup.HasComponent(planeStabilizerComponent.GuideEntity)) return;
 
-        LocalTransform targetTransform = TransformLookup[stabilizer.TargetEntity];
+        LocalTransform targetTransform = TransformLookup[planeStabilizerComponent.GuideEntity];
 
         quaternion currentRotation = math.normalizesafe(transform.Rotation);
         quaternion targetRotation = math.normalizesafe(targetTransform.Rotation);
@@ -66,7 +67,7 @@ public partial struct StabilizePlaneJob : IJobEntity
         {
             float3 forwardAxis = forwardCross / forwardSinAngle;
             float forwardAngle = math.atan2(forwardSinAngle, forwardDot);
-            angularError += forwardAxis * forwardAngle * stabilizer.ForwardWeight;
+            angularError += forwardAxis * forwardAngle * planeStabilizerComponent.ForwardWeight;
         }
 
         // Up alignment
@@ -93,7 +94,7 @@ public partial struct StabilizePlaneJob : IJobEntity
                 {
                     float3 upAxis = upCross / upSinAngle;
                     float upAngle = math.atan2(upSinAngle, upDot);
-                    angularError += upAxis * upAngle * stabilizer.UpWeight;
+                    angularError += upAxis * upAngle * planeStabilizerComponent.UpWeight;
                 }
             }
         }
@@ -101,23 +102,23 @@ public partial struct StabilizePlaneJob : IJobEntity
         // Check if we're close enough to stop
         if (math.lengthsq(angularError) < 0.000001f)
         {
-            velocity.Angular = math.lerp(velocity.Angular, float3.zero, math.saturate(stabilizer.Damping * DeltaTime));
+            velocity.Angular = math.lerp(velocity.Angular, float3.zero, math.saturate(planeStabilizerComponent.Damping * DeltaTime));
             return;
         }
 
-        float3 proportionalTerm = angularError * stabilizer.RotationSpeed;
-        float3 derivativeTerm = velocity.Angular * stabilizer.Damping;
+        float3 proportionalTerm = angularError * planeStabilizerComponent.RotationSpeed;
+        float3 derivativeTerm = velocity.Angular * planeStabilizerComponent.Damping;
         
         float3 targetAngularVelocity = proportionalTerm - derivativeTerm;
         
         // Clamp maximum angular velocity
         float speed = math.length(targetAngularVelocity);
-        if (speed > stabilizer.MaxAngularSpeed)
+        if (speed > planeStabilizerComponent.MaxAngularSpeed)
         {
-            targetAngularVelocity = (targetAngularVelocity / speed) * stabilizer.MaxAngularSpeed;
+            targetAngularVelocity = (targetAngularVelocity / speed) * planeStabilizerComponent.MaxAngularSpeed;
         }
 
-        float blendFactor = 1f - math.exp(-stabilizer.ResponseSpeed * DeltaTime);
+        float blendFactor = 1f - math.exp(-planeStabilizerComponent.ResponseSpeed * DeltaTime);
         velocity.Angular = math.lerp(velocity.Angular, targetAngularVelocity, blendFactor);
     }
 

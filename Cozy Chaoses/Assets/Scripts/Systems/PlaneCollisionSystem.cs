@@ -1,30 +1,30 @@
+using Components;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Physics;
 using Unity.Physics.Systems;
-using UnityEngine;
 
 [RequireMatchingQueriesForUpdate]
 [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
 [UpdateAfter(typeof(PhysicsSystemGroup))]
 partial struct PlaneCollisionSystem : ISystem
 {
-    private ComponentLookup<PlaneComponent> _planeComponentLookup;
+    private ComponentLookup<PlaneTag> _planeTagLookup;
 
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
         state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>();
         state.RequireForUpdate<SimulationSingleton>();
-        state.RequireForUpdate(state.GetEntityQuery(ComponentType.ReadOnly<PlaneComponent>()));
-        _planeComponentLookup = state.GetComponentLookup<PlaneComponent>(true); 
+        state.RequireForUpdate(state.GetEntityQuery(ComponentType.ReadOnly<PlaneTag>()));
+        _planeTagLookup = state.GetComponentLookup<PlaneTag>(true); 
     }
 
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        _planeComponentLookup.Update(ref state);
+        _planeTagLookup.Update(ref state);
 
         var simulation = SystemAPI.GetSingleton<SimulationSingleton>();
 
@@ -34,7 +34,7 @@ partial struct PlaneCollisionSystem : ISystem
         state.Dependency = new PlaneCollisionJob
         {
             ECB = ecb,
-            PlaneComponentLookup = _planeComponentLookup,
+            PlaneTagLookup = _planeTagLookup,
         }.Schedule(simulation, state.Dependency);
     }
 
@@ -47,15 +47,15 @@ partial struct PlaneCollisionSystem : ISystem
     struct PlaneCollisionJob : ITriggerEventsJob
     {
         public EntityCommandBuffer ECB;
-        [ReadOnly] public ComponentLookup<PlaneComponent> PlaneComponentLookup;
+        [ReadOnly] public ComponentLookup<PlaneTag> PlaneTagLookup;
 
         public void Execute(TriggerEvent collisionEvent)
         {
             var entityA = collisionEvent.EntityA;
             var entityB = collisionEvent.EntityB;
 
-            var isBodyAPlane = PlaneComponentLookup.HasComponent(entityA);
-            var isBodyBPlane = PlaneComponentLookup.HasComponent(entityB);
+            var isBodyAPlane = PlaneTagLookup.HasComponent(entityA);
+            var isBodyBPlane = PlaneTagLookup.HasComponent(entityB);
             
             if (!isBodyAPlane || !isBodyBPlane)
                 return;
