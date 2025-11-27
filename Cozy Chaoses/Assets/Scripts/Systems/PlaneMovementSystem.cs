@@ -1,8 +1,11 @@
+using System;
+using DefaultNamespace;
 using Unity.Burst;
-using Unity.Mathematics;
-using Unity.Transforms;
 using Unity.Entities;
-using Unity.Rendering;
+using Unity.Mathematics;
+using Unity.Physics;
+using Unity.Physics.Authoring;
+using Unity.Transforms;
 using UnityEngine;
 
 public partial struct PlaneMovementSystem : ISystem
@@ -12,17 +15,17 @@ public partial struct PlaneMovementSystem : ISystem
     {
         state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>();
         state.RequireForUpdate<PlanetComponent>();
-        state.RequireForUpdate<ConfigComponent>();
+        // state.RequireForUpdate<ConfigComponent>();
     }
-    
+
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
         var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
             .CreateCommandBuffer(state.WorldUnmanaged);
         var planet = SystemAPI.GetSingleton<PlanetComponent>();
-        var deltaTime = (float)SystemAPI.Time.DeltaTime;
-        
+        var deltaTime = SystemAPI.Time.DeltaTime;
+
         state.Dependency = new MovePlanes
         {
             ECB = ecb,
@@ -40,54 +43,31 @@ public partial struct MovePlanes : IJobEntity
     public EntityCommandBuffer ECB;
     public float DeltaTime;
     public PlanetComponent Planet;
-    
-    public void Execute(Entity entity, ref LocalTransform transform, in PlaneComponent plane)
-    {
-        float sphereRadius = Planet.Radius;
-        float3 sphereCenter = Planet.Center;
-        float speed = 5.0f;
-        
-        // Tanks tutorial note: Modify the point at which we sample the 3D noise function.
-        var yPos = transform.Position;
-        yPos.y = (float)entity.Index;
 
-        float3 dest = plane.Dest;
-        float3 pos = transform.Position;
+    public void Execute(Entity entity, ref LocalTransform transform, ref PlanePathComponent planePath)
+    {
+        planePath.ElapsedTime += DeltaTime;
+        
+        // Normalized time (0 to 1)
+        float t = math.clamp(planePath.ElapsedTime / planePath.Duration, 0f, 1f);
         
         // Placeholder for despawn behavior
-        if (HasArrived(pos, dest, sphereCenter))
+        if (t >= 1f)
         {
             ECB.AddComponent(entity, new ShouldDespawnComponent());
             return;
         }
-        
-        float3 toCenter = math.normalize(pos - sphereCenter);
-        float3 toDest = math.normalize(dest - pos); 
-        
-        // NEW POSITION
-        float3 surfaceTangent = math.normalize(toDest - toCenter * math.dot(toDest, toCenter));
-        
-        float3 rotationAxis = math.normalize(math.cross(toCenter, surfaceTangent));
-        float rotationAngle = DeltaTime * speed / (sphereRadius + 5f);
 
-        quaternion rot = quaternion.AxisAngle(rotationAxis, rotationAngle);
-        float3 newDirection = math.mul(rot, toCenter);
-        float3 newSurfacePos = sphereCenter + newDirection * (sphereRadius + 5.0f);
+        float3 newPos = LineCalculator.Calculate(planePath, t);
 
-        transform.Position = newSurfacePos;
+        if (math.distancesq(newPos, transform.Position) > 0.0001f)
+        {
+            float3 direction = math.normalize(newPos - transform.Position);
+            float3 surfaceUp = math.normalize(newPos);
+            transform.Rotation = quaternion.LookRotationSafe(direction, surfaceUp);
+        }
 
-        // NEW ROTATION
-        float3 forward = math.normalize(newSurfacePos - pos);
-        float3 up = math.normalize(pos - sphereCenter);
-        quaternion newRotation = quaternion.LookRotation(forward, up);
-        transform.Rotation = newRotation;
+        transform.Position = newPos;
     }
     
-    private bool HasArrived(float3 pos, float3 dest, float3 sphereCenter)
-    {
-        float3 currentDir = math.normalize(pos - sphereCenter); 
-        float3 destDir = math.normalize(dest - sphereCenter);
-
-        return math.dot(currentDir, destDir) > 0.999f;
-    }
 }

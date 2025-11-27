@@ -2,6 +2,7 @@ using Unity.Entities;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Mathematics;
+using Unity.Physics.Authoring;
 using Unity.Transforms;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -20,6 +21,7 @@ public partial struct PlaneSpawnSystem : ISystem
         state.RequireForUpdate<ConfigComponent>();
         state.RequireForUpdate<PlanetComponent>();
         state.RequireForUpdate<AirportComponent>();
+        
     }
 
     [BurstCompile]
@@ -37,18 +39,19 @@ public partial struct PlaneSpawnSystem : ISystem
             
             airports = query.ToComponentDataArray<LocalTransform>(Allocator.Persistent);
         }
+        
+        var planet = SystemAPI.GetSingleton<PlanetComponent>();
 
         var elapsedTime = SystemAPI.Time.ElapsedTime;
-        
+
         state.Dependency = new SpawnPlanes
         {
             ECB = ecb,
             Config = config,
             ElapsedTime = elapsedTime,
-            Airports = airports
-            
+            Airports = airports,
+            Planet = planet,
         }.Schedule(state.Dependency);
-
     }
 
     [BurstCompile]
@@ -66,6 +69,8 @@ public partial struct SpawnPlanes : IJobEntity
     public ConfigComponent Config;
     public double ElapsedTime;
     public NativeArray<LocalTransform> Airports;
+    public PlanetComponent Planet;
+    
     private void Execute(ref AirportComponent sourceComponent, in LocalTransform sourceTransform)
     {
         if (ElapsedTime < sourceComponent.NextPlaneSpawnTime)
@@ -74,7 +79,7 @@ public partial struct SpawnPlanes : IJobEntity
         }
  
         var random = new Random((uint)ElapsedTime + 100);
-        sourceComponent.NextPlaneSpawnTime += random.NextDouble(2d, 10d);
+        sourceComponent.NextPlaneSpawnTime += random.NextDouble(10d, 100d);
         
         Entity planeEntity = ECB.Instantiate(Config.PlanePrefab);
         
@@ -87,7 +92,27 @@ public partial struct SpawnPlanes : IJobEntity
 
         var dest = Airports[di].Position;
         
-        ECB.AddComponent(planeEntity, LocalTransform.FromPosition(sourceTransform.Position));
-        ECB.AddComponent(planeEntity, new PlaneComponent { Dest = dest });
+        // Spawn a little above the airport
+        var up = math.normalize(sourceTransform.Position);
+        var spawnPosition = sourceTransform.Position + up * 1f;
+        
+        ECB.AddComponent(planeEntity, LocalTransform.FromPositionRotation(spawnPosition, sourceTransform.Rotation));
+        ECB.SetComponent(planeEntity, new PlanePathComponent
+        {
+            Shape = PathShape.Curve,
+            StartPoint = sourceTransform.Position,
+            EndPoint = dest,
+            ControlPoint = GetMidpoint(sourceTransform.Position, dest),
+            Duration = random.NextFloat(10f, 30f), // TODO: Make a function of distance
+        });
+    }
+    
+    private float3 GetMidpoint(float3 a, float3 b)
+    {
+        float3 mid = (a + b) / 2f;
+        float3 direction = math.normalize(mid);
+        float distanceFromCenter = math.length(mid);
+        float offset = Planet.Radius * 0.2f; // 20% of planet radius
+        return direction * (Planet.Radius + distanceFromCenter + offset);
     }
 }

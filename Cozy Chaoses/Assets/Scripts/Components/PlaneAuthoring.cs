@@ -4,16 +4,18 @@ using UnityEngine;
 
 public class PlaneAuthoring : MonoBehaviour
 {
-    public float3 dest;
+    public GameObject planeObject; // Reference to the actual plane
     
     class Baker : Baker<PlaneAuthoring>
     {
         public override void Bake(PlaneAuthoring authoring)
         {
             var entity = GetEntity(authoring, TransformUsageFlags.Dynamic);
+            var planeEntity = GetEntity(authoring.planeObject, TransformUsageFlags.Dynamic);
+
             AddComponent(entity, new PlaneComponent
             {
-                Dest = authoring.dest
+                PlaneEntityReference = planeEntity
             });
         }
     }
@@ -21,5 +23,5 @@ public class PlaneAuthoring : MonoBehaviour
 
 public struct PlaneComponent : IComponentData
 {
-    public float3 Dest;
+    public Entity PlaneEntityReference;
 }
