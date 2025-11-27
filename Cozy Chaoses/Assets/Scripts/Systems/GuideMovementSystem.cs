@@ -35,7 +35,6 @@ public partial struct GuideMovementSystem : ISystem
 }
 
 [BurstCompile]
-[WithAll(typeof(GuideComponent))]
 [WithNone(typeof(ShouldDespawnTag))]
 public partial struct MoveGuidesJob : IJobEntity
 {
