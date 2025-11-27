@@ -9,7 +9,7 @@ namespace Systems
 {
 #if UNITY_EDITOR
     [UpdateInGroup(typeof(PresentationSystemGroup))]
-    public partial struct PlanePathDebugSystem : ISystem
+    public partial struct GuidePathDebugSystem : ISystem
     {
         [BurstCompile]
         public void OnCreate(ref SystemState state)
@@ -33,9 +33,9 @@ namespace Systems
         {
             public EntityCommandBuffer ECB;
 
-            public void Execute(in LocalTransform transform, ref PlanePathComponent planePath)
+            public void Execute(in LocalTransform transform, ref GuidePathComponent guidePath)
             {
-                Vector3 start = planePath.StartPoint;
+                Vector3 start = guidePath.StartPoint;
 
                 int segments = 50;
                 Vector3 prevPos = start;
@@ -43,7 +43,7 @@ namespace Systems
                 for (int i = 1; i <= segments; i++)
                 {
                     float t = (float)i / segments;
-                    Vector3 currentPos = LineCalculator.Calculate(planePath, t);
+                    Vector3 currentPos = LineCalculator.Calculate(guidePath, t);
 
                     Debug.DrawLine(prevPos, currentPos, Color.cyan);
                     prevPos = currentPos;

@@ -5,7 +5,7 @@ using Unity.Mathematics;
 
 namespace Components
 {
-    public class PlanePathAuthoring : MonoBehaviour
+    public class GuidePathAuthoring : MonoBehaviour
     {
         public PathShape shape;
         public float3 endPoint; // Assign another GameObject as destination
@@ -14,9 +14,9 @@ namespace Components
         public float frequency = 2f;
         public float amplitudeOrSteepness = 5f;
 
-        private class PlanePathAuthoringBaker : Baker<PlanePathAuthoring>
+        private class GuidePathAuthoringBaker : Baker<GuidePathAuthoring>
         {
-            public override void Bake(PlanePathAuthoring authoring)
+            public override void Bake(GuidePathAuthoring authoring)
             {
                 var entity = GetEntity(TransformUsageFlags.Dynamic);
                 
@@ -29,9 +29,9 @@ namespace Components
             }
         }
         
-        private static PlanePathComponent GetPathComponent(PlanePathAuthoring authoring)
+        private static GuidePathComponent GetPathComponent(GuidePathAuthoring authoring)
         {
-            return new PlanePathComponent
+            return new GuidePathComponent
             {
                 Shape = authoring.shape,
                 StartPoint = authoring.transform.position,
@@ -51,7 +51,7 @@ namespace Components
             Vector3 end = endPoint;
             Vector3 control = controlPoint;
 
-            PlanePathComponent pathComponent = GetPathComponent(this);
+            GuidePathComponent pathComponent = GetPathComponent(this);
 
             int segments = 50;
             Vector3 prevPos = start;
@@ -82,11 +82,10 @@ public enum PathShape
 {
     Linear,
     SineWave,
-    Sigmoid,
     Curve // Simple Quadratic Bezier
 }
 
-public struct PlanePathComponent : IComponentData
+public struct GuidePathComponent : IComponentData
 {
     public PathShape Shape;
     public float3 StartPoint;
@@ -104,15 +103,4 @@ public struct PlanePathComponent : IComponentData
 
 public struct GuideTargetTag : IComponentData
 {
-}
-
-public struct PlaneStabilizer : IComponentData
-{
-    public Entity TargetEntity;
-    public float RotationSpeed;
-    public float Damping;
-    public float MaxAngularSpeed;
-    public float ResponseSpeed;
-    public float ForwardWeight;
-    public float UpWeight;
 }

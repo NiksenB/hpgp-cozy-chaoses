@@ -9,7 +9,7 @@ using UnityEngine;
 using Random = Unity.Mathematics.Random;
 
 [UpdateBefore(typeof(TransformSystemGroup))]
-public partial struct PlaneSpawnSystem : ISystem
+public partial struct PlaneAndGuideSpawnSystem : ISystem
 {
     private float timer;
     private NativeArray<LocalTransform> airports;
@@ -97,7 +97,7 @@ public partial struct SpawnPlanes : IJobEntity
         var spawnPosition = sourceTransform.Position + up * 1f;
         
         ECB.AddComponent(planeEntity, LocalTransform.FromPositionRotation(spawnPosition, sourceTransform.Rotation));
-        ECB.SetComponent(planeEntity, new PlanePathComponent
+        ECB.SetComponent(planeEntity, new GuidePathComponent
         {
             Shape = PathShape.Curve,
             StartPoint = sourceTransform.Position,
