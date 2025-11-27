@@ -1,4 +1,10 @@
 {
-  "planetRadius": 100.0,
-  "airportCount": 25
+    "airportCount": 25,
+    "planetRadius": 100.0,
+    "planeRotationSpeed": 6.0,
+    "planeDamping": 7.0,
+    "planeMaxAngularSpeed": 6.0,
+    "planeResponseSpeed": 8.0,
+    "planeForwardWeight": 1.0,
+    "planeUpWeight": 0.5
 }
