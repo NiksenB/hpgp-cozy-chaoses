@@ -46,7 +46,7 @@ public partial struct StabilizePlaneJob : IJobEntity
         quaternion currentRotation = math.normalizesafe(transform.Rotation);
         quaternion targetRotation = math.normalizesafe(targetTransform.Rotation);
         
-        DrawDebug(transform, currentRotation, targetRotation);
+        DrawDebug(transform, currentRotation);
 
         // Get actual direction vectors in world space
         float3 currentForward = math.mul(currentRotation, new float3(0, 0, 1));
@@ -121,16 +121,12 @@ public partial struct StabilizePlaneJob : IJobEntity
         velocity.Angular = math.lerp(velocity.Angular, targetAngularVelocity, blendFactor);
     }
 
-    public void DrawDebug(LocalTransform transform, quaternion currentRotation, quaternion targetRotation)
+    public void DrawDebug(LocalTransform transform, quaternion currentRotation)
     {
         float3 planeForward = math.mul(currentRotation, new float3(0, 0, 1));
         float3 planeUp = math.mul(currentRotation, new float3(0, 1, 0));
-        float3 targetForward = math.mul(targetRotation, new float3(0, 0, 1));
-        float3 targetUp = math.mul(targetRotation, new float3(0, 1, 0));
 
         Debug.DrawRay(transform.Position, planeForward * 2f, Color.blue);   // Plane forward
         Debug.DrawRay(transform.Position, planeUp * 2f, Color.green);       // Plane up
-        Debug.DrawRay(transform.Position, targetForward * 2f, Color.cyan);  // Target forward
-        Debug.DrawRay(transform.Position, targetUp * 2f, Color.yellow);     // Target up
     }
 }
