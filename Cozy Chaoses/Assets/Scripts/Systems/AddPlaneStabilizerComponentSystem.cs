@@ -36,12 +36,6 @@ namespace Systems
                     ecb.AddComponent(planeEntity, new PlaneStabilizerComponent
                     {
                         GuideEntity = entity, // Point back to the guide
-                        RotationSpeed = 6f, // How fast to rotate towards target
-                        Damping = 7f, // Damping factor for angular velocity
-                        MaxAngularSpeed = 6f, // Limit on angular velocity
-                        ResponseSpeed = 8f, // How quickly to correct orientation
-                        ForwardWeight = 1.0f, // Weight for forward alignment
-                        UpWeight = 0.5f, // Weight for up alignment
                     });
                 }
             }
