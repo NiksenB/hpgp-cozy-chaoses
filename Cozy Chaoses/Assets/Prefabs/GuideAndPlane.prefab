@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 3745123210646323921}
   - component: {fileID: 1912986119047804761}
   - component: {fileID: 3497364063022939769}
-  - component: {fileID: 8355592130445366390}
   m_Layer: 0
   m_Name: GuideAndPlane
   m_TagString: Untagged
@@ -152,19 +151,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c16549610bfe4458aa9389201d072bb6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Entities.Hybrid::Unity.Entities.Hybrid.Baking.LinkedEntityGroupAuthoring
---- !u!114 &8355592130445366390
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9146640197352250829}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bec7379aea5215b45a79d8731e2eb730, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlaneAuthoring
-  planeObject: {fileID: 5704863114601971215}
 --- !u!1001 &4893960439045096286
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -227,6 +213,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 744e01d3d39888e4bb092f1d04f82869, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3478816102894579238}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 744e01d3d39888e4bb092f1d04f82869, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3072791030800348026}
   m_SourcePrefab: {fileID: 100100000, guid: 744e01d3d39888e4bb092f1d04f82869, type: 3}
 --- !u!4 &4927059395845842101 stripped
 Transform:
@@ -301,3 +290,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9642b9a7479847d78092f432ee80f044, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Components.PlaneTagAuthoring
+--- !u!114 &3072791030800348026
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5704863114601971215}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3563b3db5f7405285861df506555e4b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlaneStabilizerAuthoring
+  guideObject: {fileID: 9146640197352250829}
+  rotationSpeed: 6
+  damping: 7
+  maxAngularSpeed: 6
+  responseSpeed: 8
+  forwardWeight: 1
+  upWeight: 0.5
