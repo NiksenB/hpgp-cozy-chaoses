@@ -12,23 +12,28 @@ using UnityEngine;
 [BurstCompile]
 public partial struct TcasCollisionDetectionSystem : ISystem
 {
+    private ComponentLookup<PlaneStabilizerComponent> _planeStabilizerLookup;
+    
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
         state.RequireForUpdate<SimulationSingleton>();
         state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>();
-
+        state.RequireForUpdate(state.GetEntityQuery(ComponentType.ReadWrite<PlaneStabilizerComponent>()));
+        _planeStabilizerLookup = state.GetComponentLookup<PlaneStabilizerComponent>(false); 
     }
     
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
+        _planeStabilizerLookup.Update(ref state);
+
         var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
             .CreateCommandBuffer(state.WorldUnmanaged);
         
         state.Dependency = new TcasCollisionJob
         {
-            PlaneLookup = SystemAPI.GetComponentLookup<PlaneTag>(true),
+            PlaneStabilizerLookup = _planeStabilizerLookup,
             TransformLookup = SystemAPI.GetComponentLookup<LocalTransform>(true),
             ECB = ecb,
         }.Schedule(SystemAPI.GetSingleton<SimulationSingleton>(), state.Dependency);
@@ -38,7 +43,7 @@ public partial struct TcasCollisionDetectionSystem : ISystem
 [BurstCompile]
 public struct TcasCollisionJob : ITriggerEventsJob
 {
-    [ReadOnly] public ComponentLookup<PlaneTag> PlaneLookup;
+    public ComponentLookup<PlaneStabilizerComponent> PlaneStabilizerLookup;
     [ReadOnly] public ComponentLookup<LocalTransform> TransformLookup;
     public EntityCommandBuffer ECB;
     
@@ -47,14 +52,17 @@ public struct TcasCollisionJob : ITriggerEventsJob
         var entityA = triggerEvent.EntityA;
         var entityB = triggerEvent.EntityB;
 
-        if (PlaneLookup.HasComponent(entityA) &&
-            PlaneLookup.HasComponent(entityB))
+        if (PlaneStabilizerLookup.HasComponent(entityA) &&
+            PlaneStabilizerLookup.HasComponent(entityB))
         {
             float3 posA = TransformLookup[entityA].Position;
             float3 posB = TransformLookup[entityB].Position;
 
-            ECB.AddComponent(entityA, new AlertComponent { EntityPos = posB });
-            ECB.AddComponent(entityB, new AlertComponent { EntityPos = posA });
+            var planeStabilizerEntityA = PlaneStabilizerLookup.GetRefRW(entityA);
+            var planeStabilizerEntityB = PlaneStabilizerLookup.GetRefRW(entityB);
+            
+            ECB.AddComponent(planeStabilizerEntityA.ValueRW.GuideEntity, new AlertComponent { EntityPos = posB });
+            ECB.AddComponent(planeStabilizerEntityB.ValueRW.GuideEntity, new AlertComponent { EntityPos = posA });
         }
     }
 }

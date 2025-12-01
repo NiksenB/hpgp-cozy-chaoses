@@ -25,18 +25,26 @@ public partial struct GuideMovementSystem : ISystem
         var planet = SystemAPI.GetSingleton<PlanetComponent>();
         var deltaTime = SystemAPI.Time.DeltaTime;
 
-        state.Dependency = new MoveGuidesJob
+        var alertMoves = new MoveGuidesAvoidCollisionJob
         {
             ECB = ecb,
             DeltaTime = deltaTime,
             Planet = planet
         }.Schedule(state.Dependency);
+        
+        state.Dependency = new MoveGuidesTowardsEnpointJob
+        {
+            ECB = ecb,
+            DeltaTime = deltaTime,
+            Planet = planet
+        }.Schedule(alertMoves);
     }
 }
 
 [BurstCompile]
+[WithNone(typeof(AlertComponent))]
 [WithNone(typeof(ShouldDespawnTag))]
-public partial struct MoveGuidesJob : IJobEntity
+public partial struct MoveGuidesTowardsEnpointJob : IJobEntity
 {
     public EntityCommandBuffer ECB;
     public float DeltaTime;
@@ -44,11 +52,12 @@ public partial struct MoveGuidesJob : IJobEntity
 
     public void Execute(Entity entity, ref LocalTransform transform, ref GuidePathComponent guidePath)
     {
+        Debug.Log("Normal movement");
         guidePath.ElapsedTime += DeltaTime;
-        
+
         // Normalized time (0 to 1)
         float t = math.clamp(guidePath.ElapsedTime / guidePath.Duration, 0f, 1f);
-        
+
         // Placeholder for despawn behavior
         if (t >= 1f)
         {
@@ -67,5 +76,42 @@ public partial struct MoveGuidesJob : IJobEntity
 
         transform.Position = newPos;
     }
-    
+}
+
+
+[BurstCompile]
+[WithAll(typeof(AlertComponent))]
+[WithNone(typeof(ShouldDespawnTag))]
+public partial struct MoveGuidesAvoidCollisionJob : IJobEntity
+{
+    public EntityCommandBuffer ECB;
+    public float DeltaTime;
+    public PlanetComponent Planet;
+
+    public void Execute(Entity entity, ref LocalTransform transform, ref GuidePathComponent guidePath)
+    {
+        Debug.Log("NOT Normal movement");
+        guidePath.ElapsedTime += DeltaTime;
+
+        // Normalized time (0 to 1)
+        float t = math.clamp(guidePath.ElapsedTime / guidePath.Duration, 0f, 1f);
+
+        // Placeholder for despawn behavior
+        if (t >= 1f)
+        {
+            ECB.AddComponent(entity, new ShouldDespawnTag());
+            return;
+        }
+
+        float3 newPos = LineCalculator.Calculate(guidePath, t);
+
+        if (math.distancesq(newPos, transform.Position) > 0.0001f)
+        {
+            float3 direction = math.normalize(newPos - transform.Position);
+            float3 surfaceUp = math.normalize(newPos);
+            transform.Rotation = quaternion.LookRotationSafe(direction, surfaceUp);
+        }
+
+        transform.Position = newPos;
+    }
 }

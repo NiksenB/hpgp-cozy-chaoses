@@ -4,6 +4,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Physics;
 using Unity.Physics.Systems;
+using Unity.VisualScripting;
 using UnityEngine;
 
 [RequireMatchingQueriesForUpdate]
@@ -11,21 +12,21 @@ using UnityEngine;
 [UpdateAfter(typeof(PhysicsSystemGroup))]
 partial struct PlaneCollisionSystem : ISystem
 {
-    private ComponentLookup<PlaneTag> _planeTagLookup;
+    private ComponentLookup<PlaneStabilizerComponent> _planeStabilizerLookup;
 
     [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
         state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>();
         state.RequireForUpdate<SimulationSingleton>();
-        state.RequireForUpdate(state.GetEntityQuery(ComponentType.ReadOnly<PlaneTag>()));
-        _planeTagLookup = state.GetComponentLookup<PlaneTag>(true); 
+        state.RequireForUpdate(state.GetEntityQuery(ComponentType.ReadWrite<PlaneStabilizerComponent>()));
+        _planeStabilizerLookup = state.GetComponentLookup<PlaneStabilizerComponent>(false); 
     }
 
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        _planeTagLookup.Update(ref state);
+        _planeStabilizerLookup.Update(ref state);
 
         var simulation = SystemAPI.GetSingleton<SimulationSingleton>();
 
@@ -35,7 +36,7 @@ partial struct PlaneCollisionSystem : ISystem
         state.Dependency = new PlaneCollisionJob
         {
             ECB = ecb,
-            PlaneTagLookup = _planeTagLookup,
+            PlaneStabilizerLookup = _planeStabilizerLookup,
         }.Schedule(simulation, state.Dependency);
     }
 
@@ -45,26 +46,29 @@ partial struct PlaneCollisionSystem : ISystem
 
     }
 
+    [BurstCompile]
     [WithAll(typeof(AlertComponent))]
     struct PlaneCollisionJob : ICollisionEventsJob
     {
         public EntityCommandBuffer ECB;
-        [ReadOnly] public ComponentLookup<PlaneTag> PlaneTagLookup;
+        public ComponentLookup<PlaneStabilizerComponent> PlaneStabilizerLookup;
 
         public void Execute(CollisionEvent collisionEvent)
         {
             var entityA = collisionEvent.EntityA;
             var entityB = collisionEvent.EntityB;
 
-            var isBodyAPlane = PlaneTagLookup.HasComponent(entityA);
-            var isBodyBPlane = PlaneTagLookup.HasComponent(entityB);
+            var isBodyAPlane = PlaneStabilizerLookup.HasComponent(entityA);
+            var isBodyBPlane = PlaneStabilizerLookup.HasComponent(entityB);
             
             if (!isBodyAPlane || !isBodyBPlane)
                 return;
             
-            // Both entities are planes, handle collision
-            ECB.AddComponent(entityA, new ShouldDespawnTag());
-            ECB.AddComponent(entityB, new ShouldDespawnTag());
+            var planeStabilizerEntityA = PlaneStabilizerLookup.GetRefRW(entityA);
+            var planeStabilizerEntityB = PlaneStabilizerLookup.GetRefRW(entityB);
+            
+            ECB.AddComponent(planeStabilizerEntityA.ValueRW.GuideEntity, new ShouldDespawnTag());
+            ECB.AddComponent(planeStabilizerEntityB.ValueRW.GuideEntity, new ShouldDespawnTag());
         }
     }
 }
