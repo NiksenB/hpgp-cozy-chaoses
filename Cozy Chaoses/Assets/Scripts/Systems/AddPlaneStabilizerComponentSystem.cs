@@ -35,7 +35,7 @@ namespace Systems
                 {
                     ecb.AddComponent(planeEntity, new PlaneStabilizerComponent
                     {
-                        TargetEntity = entity, // Point back to the guide
+                        GuideEntity = entity, // Point back to the guide
                     });
                 }
             }
