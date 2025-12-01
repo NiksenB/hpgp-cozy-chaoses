@@ -40,7 +40,8 @@ public class CameraController : MonoBehaviour
         if (zoomMod)
         {
             Vector3 zoomDirection = camera.forward * input.y;
-            camera.position += speed * Time.deltaTime * zoomDirection;      }
+            camera.position += speed * Time.deltaTime * zoomDirection;      
+        }
         else if (rotateMod)
         {
             float pitch = -input.y * speed * Time.deltaTime;
@@ -52,5 +53,19 @@ public class CameraController : MonoBehaviour
             Vector3 moveDirection = camera.rotation * input.normalized;
             camera.position += speed * Time.deltaTime * moveDirection;
         }
+    }
+
+    public static void AdjustCameraPosition(float planetRadius)
+    {
+        var pos =  Camera.main.transform.position;
+        
+        Camera.main.transform.position = new Vector3
+            (
+                pos.x, 
+                pos.y,
+                -planetRadius - planetRadius*0.1f - 50f
+            );
+        
+        Camera.main.transform.rotation = Quaternion.LookRotation( - pos );
     }
 }

@@ -20,6 +20,8 @@ namespace Systems
             state.Enabled = false;
 
             ConfigFileData configData = GetConfig();
+
+            CameraController.AdjustCameraPosition(configData.planetRadius);
             
             var entity = SystemAPI.GetSingletonEntity<PrefabConfigComponent>();
             PrefabConfigComponent prefabConfig = SystemAPI.GetSingleton<PrefabConfigComponent>();
