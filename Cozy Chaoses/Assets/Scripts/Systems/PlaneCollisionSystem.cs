@@ -4,6 +4,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Physics;
 using Unity.Physics.Systems;
+using UnityEngine;
 
 [RequireMatchingQueriesForUpdate]
 [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
@@ -44,12 +45,13 @@ partial struct PlaneCollisionSystem : ISystem
 
     }
 
-    struct PlaneCollisionJob : ITriggerEventsJob
+    [WithAll(typeof(AlertComponent))]
+    struct PlaneCollisionJob : ICollisionEventsJob
     {
         public EntityCommandBuffer ECB;
         [ReadOnly] public ComponentLookup<PlaneTag> PlaneTagLookup;
 
-        public void Execute(TriggerEvent collisionEvent)
+        public void Execute(CollisionEvent collisionEvent)
         {
             var entityA = collisionEvent.EntityA;
             var entityB = collisionEvent.EntityB;
