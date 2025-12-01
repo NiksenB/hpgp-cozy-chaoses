@@ -113,5 +113,11 @@ public partial struct MoveGuidesAvoidCollisionJob : IJobEntity
         }
 
         transform.Position = newPos;
+        
+        // Check if still overlapping
+        if (math.length(alert.EntityPos - transform.Position) > 10f)
+        {
+            ECB.RemoveComponent<AlertComponent>(entity);
+        }
     }
 }
