@@ -59,13 +59,7 @@ public class CameraController : MonoBehaviour
     {
         var pos =  Camera.main.transform.position;
         
-        Camera.main.transform.position = new Vector3
-            (
-                pos.x, 
-                pos.y,
-                -planetRadius - planetRadius*0.1f - 50f
-            );
-        
-        Camera.main.transform.rotation = Quaternion.LookRotation( - pos );
+        Camera.main.transform.position = new Vector3 (pos.x, planetRadius, - 0.6f * planetRadius );
+        Camera.main.transform.rotation = Quaternion.LookRotation( pos - new Vector3(0f, planetRadius, 0f));
     }
 }
