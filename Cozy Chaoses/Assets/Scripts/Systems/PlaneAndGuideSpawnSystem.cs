@@ -100,7 +100,7 @@ public partial struct SpawnPlanes : IJobEntity
         ECB.SetComponent(planeEntity, new GuidePathComponent
         {
             Shape = PathShape.Curve,
-            StartPoint = sourceTransform.Position,
+            StartPoint = spawnPosition,
             EndPoint = dest,
             ControlPoint = GetMidpoint(sourceTransform.Position, dest),
             Duration = random.NextFloat(10f, 30f), // TODO: Make a function of distance
