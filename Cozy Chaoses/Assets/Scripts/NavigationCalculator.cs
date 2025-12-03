@@ -8,17 +8,14 @@ using Unity.Transforms;
     public class NavigationCalculator
     {
         private enum Dir { Up, Down, Forward, End }
-
-        private static readonly float Speed = 5f;
+        private const float Speed = 8f;
+        private const float FrameChangeDegLimit = 0.5f;
         
-        private static readonly float VerticalDegLimit = 50f;  
-        private static readonly float FrameChangeDegLimit = 0.5f;
         public static (float3, quaternion) CalculateNext(LocalTransform  transform, GuidePathComponent guidePath, float planetRadius, float deltaTime)
         {
             float height = math.length(transform.Position - new float3(planetRadius, planetRadius, planetRadius));
-            float targetLandingDist = guidePath.TargetHeight * 2;
             
-            if (math.length(transform.Position - guidePath.EndPoint) >= targetLandingDist)
+            if (math.length(transform.Position - guidePath.EndPoint) >= guidePath.TargetHeight * 2)
             {
                 var hDiff = height - guidePath.TargetHeight;
                     
@@ -42,13 +39,25 @@ using Unity.Transforms;
             float planetRadius, float deltaTime, Dir dir)
         {
             float3 up = math.normalize(transform.Position);
-            float3 toDest = guidePath.EndPoint - transform.Position;
+
+            float3 toDest;
+            
+            if (dir == Dir.Forward || dir == Dir.Up)
+            {
+                float3 aboveEnd = guidePath.EndPoint + math.normalize(guidePath.EndPoint)*guidePath.TargetHeight;
+                toDest = aboveEnd - transform.Position;
+            }
+            else
+            {
+                toDest = guidePath.EndPoint - transform.Position;
+            }
+        
+            // limit change pr frame
             float3 currentForward = math.normalize(math.forward(transform.Rotation.value));
             var dot = math.dot(toDest, currentForward);
 
             if (dot < 0.99f)
             {
-                // limit horizontal rotation pr frame
                 float3 cross = math.cross(currentForward, toDest);
                 float sign = math.sign(math.dot(cross, up));
                 quaternion smallTurn = quaternion.AxisAngle(up, math.radians(FrameChangeDegLimit) * sign);
