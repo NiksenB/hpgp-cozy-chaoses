@@ -1,10 +1,6 @@
-using System;
-using DefaultNamespace;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
-using Unity.Physics;
-using Unity.Physics.Authoring;
 using Unity.Transforms;
 using UnityEngine;
 
@@ -52,29 +48,19 @@ public partial struct MoveGuidesTowardsEnpointJob : IJobEntity
 
     public void Execute(Entity entity, ref LocalTransform transform, ref GuidePathComponent guidePath)
     {
-        Debug.Log("Normal movement");
-        guidePath.ElapsedTime += DeltaTime;
-
-        // Normalized time (0 to 1)
-        float t = math.clamp(guidePath.ElapsedTime / guidePath.Duration, 0f, 1f);
-
-        // Placeholder for despawn behavior
-        if (t >= 1f)
+        // Despawn if landed or directly above airport
+        float3 currentDir = math.normalize(transform.Position); 
+        float3 destDir = math.normalize(guidePath.EndPoint);
+        
+        if (math.dot(currentDir, destDir) > 0.999f)
         {
             ECB.AddComponent(entity, new ShouldDespawnTag());
             return;
         }
-
-        float3 newPos = LineCalculator.Calculate(guidePath, t);
-
-        if (math.distancesq(newPos, transform.Position) > 0.0001f)
-        {
-            float3 direction = math.normalize(newPos - transform.Position);
-            float3 surfaceUp = math.normalize(newPos);
-            transform.Rotation = quaternion.LookRotationSafe(direction, surfaceUp);
-        }
-
-        transform.Position = newPos;
+        
+        var next = NavigationCalculator.CalculateNext(transform, guidePath, Planet.Radius, DeltaTime);
+        transform.Position = next.Item1;
+        transform.Rotation = next.Item2;
     }
 }
 
@@ -88,31 +74,29 @@ public partial struct MoveGuidesAvoidCollisionJob : IJobEntity
     public float DeltaTime;
     public PlanetComponent Planet;
 
-    public void Execute(Entity entity, ref LocalTransform transform, ref GuidePathComponent guidePath)
+    public void Execute(Entity entity, ref LocalTransform transform, ref GuidePathComponent guidePath, ref AlertComponent alert)
     {
         Debug.Log("NOT Normal movement");
-        guidePath.ElapsedTime += DeltaTime;
 
-        // Normalized time (0 to 1)
-        float t = math.clamp(guidePath.ElapsedTime / guidePath.Duration, 0f, 1f);
-
-        // Placeholder for despawn behavior
-        if (t >= 1f)
+        // Despawn if landed or directly above airport
+        float3 currentDir = math.normalize(transform.Position); 
+        float3 destDir = math.normalize(guidePath.EndPoint);
+        
+        if (math.dot(currentDir, destDir) > 0.999f)
         {
             ECB.AddComponent(entity, new ShouldDespawnTag());
             return;
         }
 
-        float3 newPos = LineCalculator.Calculate(guidePath, t);
-
-        if (math.distancesq(newPos, transform.Position) > 0.0001f)
-        {
-            float3 direction = math.normalize(newPos - transform.Position);
-            float3 surfaceUp = math.normalize(newPos);
-            transform.Rotation = quaternion.LookRotationSafe(direction, surfaceUp);
-        }
-
-        transform.Position = newPos;
+        // movement logic here
+        // float3 nextPos = NavigationCalculator.CalculateNext(guidePath, transform.Position, transform.Rotation);
+        // float3 direction = math.normalize(nextPos - transform.Position);
+        // float3 surfaceUp = math.normalize(nextPos);
+        // transform.Rotation = quaternion.LookRotationSafe(direction, surfaceUp);
+        // transform.Position = nextPos;
+        var next = NavigationCalculator.CalculateNext(transform, guidePath, Planet.Radius, DeltaTime);
+        transform.Position = next.Item1;
+        transform.Rotation = next.Item2;
         
         // Check if still overlapping
         if (math.length(alert.EntityPos - transform.Position) > 10f)

@@ -1,4 +1,3 @@
-using DefaultNamespace;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -43,7 +42,7 @@ namespace Systems
                 for (int i = 1; i <= segments; i++)
                 {
                     float t = (float)i / segments;
-                    Vector3 currentPos = LineCalculator.Calculate(guidePath, t);
+                    Vector3 currentPos = transform.Position;
 
                     Debug.DrawLine(prevPos, currentPos, Color.cyan);
                     prevPos = currentPos;
