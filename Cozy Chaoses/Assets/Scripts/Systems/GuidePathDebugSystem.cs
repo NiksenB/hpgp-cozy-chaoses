@@ -22,30 +22,41 @@ namespace Systems
             var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
                 .CreateCommandBuffer(state.WorldUnmanaged);
 
+            var planet = SystemAPI.GetSingleton<PlanetComponent>();
+            var dt = SystemAPI.Time.fixedDeltaTime;
+
             state.Dependency = new DrawLinesJob
             {
                 ECB = ecb,
+                Planet = planet,
+                DeltaTime = dt,
             }.Schedule(state.Dependency);
         }
 
         public partial struct DrawLinesJob : IJobEntity
         {
             public EntityCommandBuffer ECB;
+            public float DeltaTime;
+            public PlanetComponent Planet;
 
             public void Execute(in LocalTransform transform, ref GuidePathComponent guidePath)
             {
-                Vector3 start = guidePath.StartPoint;
+                Vector3 start = transform.Position;
 
-                int segments = 50;
+                int segments = 100;
                 Vector3 prevPos = start;
+                Quaternion prevRotation = transform.Rotation;
 
                 for (int i = 1; i <= segments; i++)
                 {
-                    float t = (float)i / segments;
-                    Vector3 currentPos = transform.Position;
+                    LocalTransform newTransform = LocalTransform.FromPositionRotation(prevPos, prevRotation);
+                    // float t = (float)i / segments;
+                    var result = NavigationCalculator.CalculateNext(newTransform, guidePath, Planet.Radius, DeltaTime);
+                    
 
-                    Debug.DrawLine(prevPos, currentPos, Color.cyan);
-                    prevPos = currentPos;
+                    Debug.DrawLine(prevPos, result.Item1, Color.cyan);
+                    prevPos = result.Item1;
+                    prevRotation = result.Item2;
                 }
                 
                 // Draw line up from transform position to indicate height
