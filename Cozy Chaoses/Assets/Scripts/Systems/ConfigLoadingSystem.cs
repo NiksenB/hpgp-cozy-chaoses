@@ -28,6 +28,7 @@ namespace Systems
             {
                 PlanePrefab = prefabConfig.PlanePrefab,
                 PlaneRotationSpeed = configData.planeRotationSpeed,
+                PlaneSpeed =  configData.planeSpeed,
                 PlaneDamping = configData.planeDamping,
                 PlaneMaxAngularSpeed = configData.planeMaxAngularSpeed,
                 PlaneResponseSpeed = configData.planeResponseSpeed,
@@ -74,6 +75,7 @@ namespace Systems
             {
                 airportCount = 25,
                 planetRadius = 100f,
+                planeSpeed = 5f,
                 planeRotationSpeed = 6f,
                 planeDamping = 7f,
                 planeMaxAngularSpeed = 6f,
@@ -88,7 +90,7 @@ namespace Systems
     {
         public int airportCount;
         public float planetRadius;
-        
+        public float planeSpeed;
         public float planeRotationSpeed;
         public float planeDamping;
         public float planeMaxAngularSpeed;

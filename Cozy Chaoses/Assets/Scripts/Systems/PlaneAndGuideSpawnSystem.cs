@@ -21,7 +21,6 @@ public partial struct PlaneAndGuideSpawnSystem : ISystem
         state.RequireForUpdate<ConfigComponent>();
         state.RequireForUpdate<PlanetComponent>();
         state.RequireForUpdate<AirportComponent>();
-        
     }
 
     [BurstCompile]
@@ -91,6 +90,7 @@ public partial struct SpawnPlanes : IJobEntity
         }
 
         var dest = Airports[di].Position;
+        var dist = math.length(dest - sourceTransform.Position);
         
         // Spawn a little above the airport
         var up = math.normalize(sourceTransform.Position);
@@ -99,20 +99,9 @@ public partial struct SpawnPlanes : IJobEntity
         ECB.AddComponent(planeEntity, LocalTransform.FromPositionRotation(spawnPosition, sourceTransform.Rotation));
         ECB.SetComponent(planeEntity, new GuidePathComponent
         {
-            Shape = PathShape.Curve,
             StartPoint = sourceTransform.Position,
             EndPoint = dest,
-            ControlPoint = GetMidpoint(sourceTransform.Position, dest),
-            Duration = random.NextFloat(10f, 30f), // TODO: Make a function of distance
+            TargetAltitude = random.NextFloat(0.01f * Config.PlanetRadius * (dist/Config.PlanetRadius) , 0.05f * Config.PlanetRadius * (dist/Config.PlanetRadius)),
         });
-    }
-    
-    private float3 GetMidpoint(float3 a, float3 b)
-    {
-        float3 mid = (a + b) / 2f;
-        float3 direction = math.normalize(mid);
-        float distanceFromCenter = math.length(mid);
-        float offset = Planet.Radius * 0.2f; // 20% of planet radius
-        return direction * (Planet.Radius + distanceFromCenter + offset);
     }
 }

@@ -32,6 +32,7 @@ public struct PrefabConfigComponent : IComponentData
 public struct ConfigComponent : IComponentData
 {
     public Entity PlanePrefab;
+    public float PlaneSpeed; // How fast planes move
     public float PlaneRotationSpeed; // How fast to rotate towards target
     public float PlaneDamping; // Damping factor for angular velocity
     public float PlaneMaxAngularSpeed; // Limit on angular velocity
