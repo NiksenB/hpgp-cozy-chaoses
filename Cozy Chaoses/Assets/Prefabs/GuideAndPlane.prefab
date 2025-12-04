@@ -127,7 +127,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 224b4e022f8d40c2a95435e9e3df0a72, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Components.PlanePathAuthoring
-  shape: 0
   endPoint:
     x: 0
     y: 0
@@ -136,9 +135,7 @@ MonoBehaviour:
     x: 0
     y: 0
     z: 0
-  duration: 10
-  frequency: 2
-  amplitudeOrSteepness: 5
+  targetHeight: 0
 --- !u!114 &3497364063022939769
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -331,11 +328,11 @@ MonoBehaviour:
   m_PrimitiveCenter:
     x: 0
     y: 0
-    z: 2
+    z: 6
   m_PrimitiveSize:
     x: 10
     y: 10
-    z: 15
+    z: 25
   m_PrimitiveOrientation:
     Value:
       x: 0
@@ -343,15 +340,15 @@ MonoBehaviour:
       z: 0
     RotationOrder: 4
   m_Capsule:
-    Height: 15
+    Height: 25
     Radius: 5
     Axis: 2
   m_Cylinder:
-    Height: 15
+    Height: 25
     Radius: 5
     Axis: 2
   m_CylinderSideCount: 20
-  m_SphereRadius: 7.5
+  m_SphereRadius: 12.5
   m_MinimumSkinnedVertexWeight: 0.1
   m_ConvexHullGenerationParameters:
     m_SimplificationTolerance: 0.047245845

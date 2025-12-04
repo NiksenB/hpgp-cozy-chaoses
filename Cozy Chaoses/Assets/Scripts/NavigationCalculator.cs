@@ -13,7 +13,10 @@ public class NavigationCalculator
     
     private const float Speed = 8f;
     private const float FrameChangeDegLimit = 0.5f;
-    private const float MaxClimbAngleFromUp = 50f; // 40° above horizon = 50° from radial up
+    
+    private const float MinClimbAngleFromUp = 40f; // 50° above horizon = 40° from radial up
+    private const float MaxClimbAngleFromUp = 70f; // 40° above horizon = 50° from radial up
+    private const float MinDescentAngleFromUp = 90f; // 0° below horizon = 90° from radial up. Allows "cruising".
     private const float MaxDescentAngleFromUp = 120f; // 30° below horizon = 120° from radial up
 
     public static (float3, quaternion) CalculateNext(LocalTransform transform, GuidePathComponent guidePath,
@@ -36,8 +39,8 @@ public class NavigationCalculator
             return FlightPhase.Descending;
         }
         
-        float heightDiff = currentHeight - targetHeight;
-        if (math.abs(heightDiff) <= 5f)
+        // We are in cruising state if we are at target height, within 10% tolerance  
+        if (math.abs(currentHeight - targetHeight) <= targetHeight * 0.1f) 
         {
             return FlightPhase.Cruising;
         }
@@ -77,90 +80,63 @@ public class NavigationCalculator
     
 private static float3 ClampToAngleLimits(float3 direction, float3 up, FlightPhase phase)
 {
-    // Calculate current angle from up vector
     float dotProduct = math.clamp(math.dot(math.normalize(direction), up), -1f, 1f);
-    float angleFromUp = math.acos(dotProduct);
+    float currentAngle = math.acos(dotProduct);
     
-    // Determine allowed angle range based on phase
     float minAngle, maxAngle;
     
     switch (phase)
     {
         case FlightPhase.Climbing:
-            // When climbing: 0° (straight up) to MaxClimbAngleFromUp (e.g., 50°)
-            minAngle = 0f;
+            minAngle = math.radians(MinClimbAngleFromUp);
             maxAngle = math.radians(MaxClimbAngleFromUp);
             break;
             
         case FlightPhase.Cruising:
-            // When cruising: horizontal flight (90° from up)
-            minAngle = math.radians(80f);  // Slight tolerance around horizon
-            maxAngle = math.radians(100f);
+            minAngle = math.radians(90f);  
+            maxAngle = math.radians(95f);
             break;
             
         case FlightPhase.Descending:
-            // When descending: 90° (horizon) to MaxDescentAngleFromUp (e.g., 120°)
-            minAngle = math.radians(90f);
+            minAngle = math.radians(MinDescentAngleFromUp);
             maxAngle = math.radians(MaxDescentAngleFromUp);
             break;
             
         default:
-            minAngle = 0f;
-            maxAngle = math.radians(180f);
+            minAngle = math.radians(MinClimbAngleFromUp);
+            maxAngle = math.radians(MaxDescentAngleFromUp);
             break;
     }
     
-    // If within limits, return as-is
-    if (angleFromUp >= minAngle && angleFromUp <= maxAngle)
+    if (currentAngle >= minAngle && currentAngle <= maxAngle)
     {
         return direction;
-    }
+    } 
     
-    // Get horizontal component
-    float3 horizontalDir = direction - up * math.dot(direction, up);
+    // Clamp to nearest boundary
+    float clampedAngle = math.clamp(currentAngle, minAngle, maxAngle);
     
-    // Avoid division by zero if direction is parallel to up
-    if (math.length(horizontalDir) > 0.0001f)
-    {
-        horizontalDir = math.normalize(horizontalDir);
-    }
-    else
-    {
-        // If direction is parallel to up, pick an arbitrary horizontal direction
-        horizontalDir = math.normalize(math.cross(up, new float3(0, 0, 1)));
-        if (math.length(horizontalDir) < 0.0001f)
-        {
-            horizontalDir = math.normalize(math.cross(up, new float3(1, 0, 0)));
-        }
-    }
-    
-    // Clamp to the nearest boundary
-    float clampedAngle = math.clamp(angleFromUp, minAngle, maxAngle);
-    
-    // Reconstruct direction at clamped angle
+    // Rebuild direction at clamped angle
+    float3 horizontalDir = math.normalize(direction - up * math.dot(direction, up));
     float3 clampedDirection = math.cos(clampedAngle) * up + math.sin(clampedAngle) * horizontalDir;
     
-    // Preserve original magnitude
-    return clampedDirection * math.length(direction);
+    return clampedDirection;
 }
     
     private static (float3, float3) SmoothTurn(float3 up, float3 forward, float3 desiredDirection)
     {
-        // Calculate angle between current and desired direction
         float dotProduct = math.clamp(math.dot(forward, desiredDirection), -1f, 1f);
         float angle = math.acos(dotProduct);
         
-        // If already aligned closely enough, use desired direction
         if (angle < math.radians(FrameChangeDegLimit))
         {
             return (desiredDirection, up);
         }
         
-        // Limit turn to max change per frame
-        float turnAngle = math.min(angle, math.radians(FrameChangeDegLimit));
         float3 turnAxis = math.normalize(math.cross(forward, desiredDirection));
         
-        // Apply limited turn
+        // Limit turn to max change per frame
+        float turnAngle = math.min(angle, math.radians(FrameChangeDegLimit));
         quaternion limitedTurn = quaternion.AxisAngle(turnAxis, turnAngle);
         float3 newForward = math.normalize(math.mul(limitedTurn, forward));
         

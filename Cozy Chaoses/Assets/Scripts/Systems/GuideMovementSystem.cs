@@ -55,6 +55,12 @@ public partial struct MoveGuidesTowardsEnpointJob : IJobEntity
             return;
         }
         
+        // TODO Crash if colliding with ground?
+        if (math.length(transform.Position - Planet.Radius) < 0)
+        {
+            Debug.Log("I am an underground plane!");
+        }
+
         var next = NavigationCalculator.CalculateNext(transform, guidePath, Planet.Radius, DeltaTime);
         transform.Position = next.Item1;
         transform.Rotation = next.Item2;
@@ -80,6 +86,12 @@ public partial struct MoveGuidesAvoidCollisionJob : IJobEntity
         {
             ECB.AddComponent(entity, new ShouldDespawnTag());
             return;
+        }
+        
+        // TODO Crash if colliding with ground?
+        if (math.length(transform.Position - Planet.Radius) < 0)
+        {
+            Debug.Log("I am an underground plane! Ouch!");
         }
 
         float3 pos = transform.Position;

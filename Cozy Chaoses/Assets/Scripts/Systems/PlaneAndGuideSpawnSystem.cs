@@ -100,7 +100,7 @@ public partial struct SpawnPlanes : IJobEntity
         {
             StartPoint = sourceTransform.Position,
             EndPoint = dest,
-            TargetHeight = random.NextFloat(5f, 15f), // TODO: Make a function of distance
+            TargetHeight = random.NextFloat(20f, 20f), // TODO: Make a function of distance
         });
     }
 }

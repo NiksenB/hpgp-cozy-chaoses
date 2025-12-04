@@ -64,6 +64,8 @@ partial struct PlaneCollisionSystem : ISystem
             if (!isBodyAPlane || !isBodyBPlane)
                 return;
             
+            Debug.Log("Ouch!");
+            
             var planeStabilizerEntityA = PlaneStabilizerLookup.GetRefRW(entityA);
             var planeStabilizerEntityB = PlaneStabilizerLookup.GetRefRW(entityB);
             
