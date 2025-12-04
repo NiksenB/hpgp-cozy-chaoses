@@ -1,5 +1,6 @@
 using Unity.Mathematics;
 using Unity.Transforms;
+using UnityEngine;
 
 public class NavigationCalculator
 {
@@ -75,51 +76,73 @@ public class NavigationCalculator
     }
     
 private static float3 ClampToAngleLimits(float3 direction, float3 up, FlightPhase phase)
+{
+    // Calculate current angle from up vector
+    float dotProduct = math.clamp(math.dot(math.normalize(direction), up), -1f, 1f);
+    float angleFromUp = math.acos(dotProduct);
+    
+    // Determine allowed angle range based on phase
+    float minAngle, maxAngle;
+    
+    switch (phase)
     {
-        // Calculate current angle from up vector
-        float dotProduct = math.clamp(math.dot(math.normalize(direction), up), -1f, 1f);
-        float angleFromUp = math.acos(dotProduct);
-        
-        // Determine allowed angle range based on phase
-        float minAngle = math.radians(90f); // Horizon
-        float maxAngle = phase switch
-        {
-            FlightPhase.Climbing => math.radians(MaxClimbAngleFromUp), // 50° from up
-            FlightPhase.Cruising => math.radians(90f), // Horizontal
-            FlightPhase.Descending => math.radians(MaxDescentAngleFromUp), // 120° from up
-            _ => math.radians(90f)
-        };
-        
-        // For descending, min and max are swapped
-        if (phase == FlightPhase.Descending)
-        {
+        case FlightPhase.Climbing:
+            // When climbing: 0° (straight up) to MaxClimbAngleFromUp (e.g., 50°)
+            minAngle = 0f;
+            maxAngle = math.radians(MaxClimbAngleFromUp);
+            break;
+            
+        case FlightPhase.Cruising:
+            // When cruising: horizontal flight (90° from up)
+            minAngle = math.radians(80f);  // Slight tolerance around horizon
+            maxAngle = math.radians(100f);
+            break;
+            
+        case FlightPhase.Descending:
+            // When descending: 90° (horizon) to MaxDescentAngleFromUp (e.g., 120°)
             minAngle = math.radians(90f);
             maxAngle = math.radians(MaxDescentAngleFromUp);
-        }
-        else if (phase == FlightPhase.Climbing)
-        {
-            minAngle = math.radians(MaxClimbAngleFromUp);
-            maxAngle = math.radians(90f);
-        }
-        
-        // If within limits, return as-is
-        float clampedAngle = math.clamp(angleFromUp, math.min(minAngle, maxAngle), math.max(minAngle, maxAngle));
-        
-        // If angle was already within limits, no change needed
-        if (math.abs(clampedAngle - angleFromUp) < 0.001f)
-        {
-            return direction;
-        }
-        
-        // Get horizontal component
-        float3 horizontalDir = math.normalize(direction - up * math.dot(direction, up));
-        
-        // Reconstruct direction at clamped angle
-        float3 clampedDirection = math.cos(clampedAngle) * up + math.sin(clampedAngle) * horizontalDir;
-        
-        // Preserve original magnitude
-        return clampedDirection * math.length(direction);
+            break;
+            
+        default:
+            minAngle = 0f;
+            maxAngle = math.radians(180f);
+            break;
     }
+    
+    // If within limits, return as-is
+    if (angleFromUp >= minAngle && angleFromUp <= maxAngle)
+    {
+        return direction;
+    }
+    
+    // Get horizontal component
+    float3 horizontalDir = direction - up * math.dot(direction, up);
+    
+    // Avoid division by zero if direction is parallel to up
+    if (math.length(horizontalDir) > 0.0001f)
+    {
+        horizontalDir = math.normalize(horizontalDir);
+    }
+    else
+    {
+        // If direction is parallel to up, pick an arbitrary horizontal direction
+        horizontalDir = math.normalize(math.cross(up, new float3(0, 0, 1)));
+        if (math.length(horizontalDir) < 0.0001f)
+        {
+            horizontalDir = math.normalize(math.cross(up, new float3(1, 0, 0)));
+        }
+    }
+    
+    // Clamp to the nearest boundary
+    float clampedAngle = math.clamp(angleFromUp, minAngle, maxAngle);
+    
+    // Reconstruct direction at clamped angle
+    float3 clampedDirection = math.cos(clampedAngle) * up + math.sin(clampedAngle) * horizontalDir;
+    
+    // Preserve original magnitude
+    return clampedDirection * math.length(direction);
+}
     
     private static (float3, float3) SmoothTurn(float3 up, float3 forward, float3 desiredDirection)
     {
