@@ -90,6 +90,7 @@ public partial struct SpawnPlanes : IJobEntity
         }
 
         var dest = Airports[di].Position;
+        var dist = math.length(dest - sourceTransform.Position);
         
         // Spawn a little above the airport
         var up = math.normalize(sourceTransform.Position);
@@ -100,7 +101,7 @@ public partial struct SpawnPlanes : IJobEntity
         {
             StartPoint = sourceTransform.Position,
             EndPoint = dest,
-            TargetHeight = random.NextFloat(20f, 20f), // TODO: Make a function of distance
+            TargetHeight = random.NextFloat(0.001f * Config.PlanetRadius * dist , 0.002f * Config.PlanetRadius * dist), 
         });
     }
 }
