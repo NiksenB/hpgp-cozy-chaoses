@@ -48,11 +48,8 @@ public partial struct MoveGuidesTowardsEnpointJob : IJobEntity
 
     public void Execute(Entity entity, ref LocalTransform transform, ref GuidePathComponent guidePath)
     {
-        // Despawn if landed or directly above airport
-        float3 currentDir = math.normalize(transform.Position); 
-        float3 destDir = math.normalize(guidePath.EndPoint);
-        
-        if (math.dot(currentDir, destDir) > 0.999f)
+        // Despawn if landed 
+        if (math.distance(transform.Position, guidePath.EndPoint) <= 1f)
         {
             ECB.AddComponent(entity, new ShouldDespawnTag());
             return;
@@ -76,12 +73,10 @@ public partial struct MoveGuidesAvoidCollisionJob : IJobEntity
 
     public void Execute(Entity entity, ref LocalTransform transform, ref GuidePathComponent guidePath, ref AlertComponent alert)
     {
-        // Despawn if landed or directly above airport
-        float3 currentDir = math.normalize(transform.Position); 
-        float3 destDir = math.normalize(guidePath.EndPoint);
         float speed = 5.0f;
         
-        if (math.dot(currentDir, destDir) > 0.999f)
+        // Despawn if landed 
+        if (math.distance(transform.Position, guidePath.EndPoint) <= 1f)
         {
             ECB.AddComponent(entity, new ShouldDespawnTag());
             return;
@@ -101,13 +96,12 @@ public partial struct MoveGuidesAvoidCollisionJob : IJobEntity
         float3 toDest;
         
         // If planes are head-on or nearly head-on, rotate until 30° to the right
-        if (dot == 0 || dot > 0.7f)
+        if (dot == 0 || dot > 0.95f)
         {
             quaternion right30 = quaternion.AxisAngle(up, math.radians(30f));
             idealDir = math.mul(right30, currentForward);
         }
-        // target is coming from less a dangerous angle, small adjustment to course
-        else if (dot > 0.2f)
+        else
         {
             idealDir = math.normalize(-toTar);
         }
@@ -118,7 +112,7 @@ public partial struct MoveGuidesAvoidCollisionJob : IJobEntity
         {
             float3 cross = math.cross(currentForward, idealDir);
             float sign = math.sign(math.dot(cross, up));
-            quaternion smallTurn = quaternion.AxisAngle(up, math.radians(2f) * sign);
+            quaternion smallTurn = quaternion.AxisAngle(up, math.radians(0.5f) * sign);
             toDest = math.mul(smallTurn, currentForward);
         }
         else
