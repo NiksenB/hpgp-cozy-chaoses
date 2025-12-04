@@ -11,8 +11,7 @@ public class NavigationCalculator
         Descending
     }
     
-    private const float Speed = 8f;
-    private const float FrameChangeDegLimit = 0.5f;
+    private const float MaxDirChangePerFrame = 0.5f; 
     
     private const float MinClimbAngleFromUp = 40f; // 50° above horizon = 40° from radial up
     private const float MaxClimbAngleFromUp = 70f; // 40° above horizon = 50° from radial up
@@ -20,14 +19,14 @@ public class NavigationCalculator
     private const float MaxDescentAngleFromUp = 120f; // 30° below horizon = 120° from radial up
 
     public static (float3, quaternion) CalculateNext(LocalTransform transform, GuidePathComponent guidePath,
-        float planetRadius, float deltaTime)
+        float speed, float planetRadius, float deltaTime)
     {
         float currentHeight = math.length(transform.Position) - planetRadius;
         float distToEnd = math.length(transform.Position - guidePath.EndPoint);
         
         FlightPhase phase = DetermineFlightPhase(currentHeight, guidePath.TargetHeight, distToEnd);
         
-        return Calculate(transform, guidePath, planetRadius, deltaTime, phase);
+        return Calculate(transform, guidePath, speed, deltaTime, phase);
     }
     
     private static FlightPhase DetermineFlightPhase(float currentHeight, float targetHeight, float distToEnd)
@@ -49,7 +48,7 @@ public class NavigationCalculator
     }
     
     private static (float3, quaternion) Calculate(LocalTransform transform, GuidePathComponent guidePath,
-        float planetRadius, float deltaTime, FlightPhase phase)
+        float speed, float deltaTime, FlightPhase phase)
     {
         float3 up = math.normalize(transform.Position);
         float3 forward = math.forward(transform.Rotation);
@@ -64,7 +63,7 @@ public class NavigationCalculator
         (float3 newForward, float3 newUp) = SmoothTurn(up, forward, desiredDirection);
         
         quaternion newRotation = quaternion.LookRotation(newForward, newUp);
-        float3 newPosition = transform.Position + newForward * Speed * deltaTime;
+        float3 newPosition = transform.Position + newForward * speed * deltaTime;
         
         return (newPosition, newRotation);
     }
@@ -128,7 +127,7 @@ private static float3 ClampToAngleLimits(float3 direction, float3 up, FlightPhas
         float dotProduct = math.clamp(math.dot(forward, desiredDirection), -1f, 1f);
         float angle = math.acos(dotProduct);
         
-        if (angle < math.radians(FrameChangeDegLimit))
+        if (angle < math.radians(MaxDirChangePerFrame))
         {
             return (desiredDirection, up);
         }
@@ -136,7 +135,7 @@ private static float3 ClampToAngleLimits(float3 direction, float3 up, FlightPhas
         float3 turnAxis = math.normalize(math.cross(forward, desiredDirection));
         
         // Limit turn to max change per frame
-        float turnAngle = math.min(angle, math.radians(FrameChangeDegLimit));
+        float turnAngle = math.min(angle, math.radians(MaxDirChangePerFrame));
         quaternion limitedTurn = quaternion.AxisAngle(turnAxis, turnAngle);
         float3 newForward = math.normalize(math.mul(limitedTurn, forward));
         

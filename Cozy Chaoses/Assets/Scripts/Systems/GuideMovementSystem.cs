@@ -10,6 +10,7 @@ public partial struct GuideMovementSystem : ISystem
     public void OnCreate(ref SystemState state)
     {
         state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>();
+        state.RequireForUpdate<ConfigComponent>();
         state.RequireForUpdate<PlanetComponent>();
     }
 
@@ -19,19 +20,22 @@ public partial struct GuideMovementSystem : ISystem
         var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
             .CreateCommandBuffer(state.WorldUnmanaged);
         var planet = SystemAPI.GetSingleton<PlanetComponent>();
+        var config = SystemAPI.GetSingleton<ConfigComponent>();
         var deltaTime = SystemAPI.Time.DeltaTime;
 
         var alertMoves = new MoveGuidesAvoidCollisionJob
         {
             ECB = ecb,
             DeltaTime = deltaTime,
+            PlaneSpeed = config.PlaneSpeed,
             Planet = planet
         }.Schedule(state.Dependency);
-        
+
         state.Dependency = new MoveGuidesTowardsEnpointJob
         {
             ECB = ecb,
             DeltaTime = deltaTime,
+            PlaneSpeed = config.PlaneSpeed,
             Planet = planet
         }.Schedule(alertMoves);
     }
@@ -44,6 +48,7 @@ public partial struct MoveGuidesTowardsEnpointJob : IJobEntity
 {
     public EntityCommandBuffer ECB;
     public float DeltaTime;
+    public float PlaneSpeed;
     public PlanetComponent Planet;
 
     public void Execute(Entity entity, ref LocalTransform transform, ref GuidePathComponent guidePath)
@@ -54,14 +59,14 @@ public partial struct MoveGuidesTowardsEnpointJob : IJobEntity
             ECB.AddComponent(entity, new ShouldDespawnTag());
             return;
         }
-        
-        // TODO Crash if colliding with ground?
+
+        // Crash if colliding with ground?
         if (math.length(transform.Position - Planet.Radius) < 0)
         {
             Debug.Log("I am an underground plane!");
         }
 
-        var next = NavigationCalculator.CalculateNext(transform, guidePath, Planet.Radius, DeltaTime);
+        var next = NavigationCalculator.CalculateNext(transform, guidePath, PlaneSpeed, Planet.Radius, DeltaTime);
         transform.Position = next.Item1;
         transform.Rotation = next.Item2;
     }
@@ -75,20 +80,21 @@ public partial struct MoveGuidesAvoidCollisionJob : IJobEntity
 {
     public EntityCommandBuffer ECB;
     public float DeltaTime;
+    public float PlaneSpeed;
     public PlanetComponent Planet;
 
     public void Execute(Entity entity, ref LocalTransform transform, ref GuidePathComponent guidePath, ref AlertComponent alert)
     {
-        float speed = 5.0f;
-        
+        float speed = PlaneSpeed;
+
         // Despawn if landed 
         if (math.distance(transform.Position, guidePath.EndPoint) <= 1f)
         {
             ECB.AddComponent(entity, new ShouldDespawnTag());
             return;
         }
-        
-        // TODO Crash if colliding with ground?
+
+        // Crash if colliding with ground?
         if (math.length(transform.Position - Planet.Radius) < 0)
         {
             Debug.Log("I am an underground plane! Ouch!");
@@ -98,15 +104,15 @@ public partial struct MoveGuidesAvoidCollisionJob : IJobEntity
 
         float3 toCenter = math.normalize(pos);
         var toTar = math.normalize(alert.EntityPos - pos);
-        
+
         float3 up = math.normalize(pos);
         float3 currentForward = math.normalize(math.forward(transform.Rotation.value));
 
         float3 idealDir = float3.zero;
         var dot = math.dot(toTar, currentForward);
-        
+
         float3 toDest;
-        
+
         // If planes are head-on or nearly head-on, rotate until 30° to the right
         if (dot == 0 || dot > 0.95f)
         {
@@ -117,7 +123,7 @@ public partial struct MoveGuidesAvoidCollisionJob : IJobEntity
         {
             idealDir = math.normalize(-toTar);
         }
-        
+
         // If we haven't turned enough yet
         float dirDiff = math.dot(currentForward, idealDir);
         if (dirDiff < 0.99f) // not yet close to ideal
@@ -148,7 +154,7 @@ public partial struct MoveGuidesAvoidCollisionJob : IJobEntity
         float3 forward = math.normalize(newSurfacePos - pos);
         quaternion newRotation = quaternion.LookRotation(forward, up);
         transform.Rotation = newRotation;
-        
+
         // Check if still overlapping
         if (math.length(alert.EntityPos - transform.Position) > 10f)
         {

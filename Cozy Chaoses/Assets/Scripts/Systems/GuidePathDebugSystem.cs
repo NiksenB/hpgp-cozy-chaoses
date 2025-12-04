@@ -15,6 +15,7 @@ namespace Systems
         {
             state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>();
             state.RequireForUpdate<PlanetComponent>();
+            state.RequireForUpdate<ConfigComponent>();
         }
 
         public void OnUpdate(ref SystemState state)
@@ -23,12 +24,14 @@ namespace Systems
                 .CreateCommandBuffer(state.WorldUnmanaged);
 
             var planet = SystemAPI.GetSingleton<PlanetComponent>();
+            var config = SystemAPI.GetSingleton<ConfigComponent>();
             var dt = SystemAPI.Time.fixedDeltaTime;
 
             state.Dependency = new DrawLinesJob
             {
                 ECB = ecb,
                 Planet = planet,
+                Config = config,
                 DeltaTime = dt,
             }.Schedule(state.Dependency);
         }
@@ -38,6 +41,7 @@ namespace Systems
             public EntityCommandBuffer ECB;
             public float DeltaTime;
             public PlanetComponent Planet;
+            public ConfigComponent Config;
 
             public void Execute(in LocalTransform transform, ref GuidePathComponent guidePath)
             {
@@ -51,7 +55,7 @@ namespace Systems
                 {
                     LocalTransform newTransform = LocalTransform.FromPositionRotation(prevPos, prevRotation);
                     // float t = (float)i / segments;
-                    var result = NavigationCalculator.CalculateNext(newTransform, guidePath, Planet.Radius, DeltaTime);
+                    var result = NavigationCalculator.CalculateNext(newTransform, guidePath, Config.PlaneSpeed, Planet.Radius, DeltaTime);
                     
 
                     Debug.DrawLine(prevPos, result.Item1, Color.cyan);
