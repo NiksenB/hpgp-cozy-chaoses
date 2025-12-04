@@ -134,7 +134,7 @@ public partial struct MoveGuidesAvoidCollisionJob : IJobEntity
 
         quaternion rot = quaternion.AxisAngle(rotationAxis, rotationAngle);
         float3 newDirection = math.mul(rot, toCenter);
-        float3 newSurfacePos = newDirection * (Planet.Radius + guidePath.TargetHeight);
+        float3 newSurfacePos = newDirection * math.length(transform.Position);
 
         transform.Position = newSurfacePos;
 
