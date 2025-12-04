@@ -11,11 +11,11 @@ public class NavigationCalculator
         Descending
     }
     
-    private const float MaxDirChangePerFrame = 0.5f; 
+    private const float MaxDirChangePerFrame = 0.75f; 
     
     private const float MinClimbAngleFromUp = 40f; // 50° above horizon = 40° from radial up
     private const float MaxClimbAngleFromUp = 70f; // 40° above horizon = 50° from radial up
-    private const float MinDescentAngleFromUp = 90f; // 0° below horizon = 90° from radial up. Allows "cruising".
+    private const float MinDescentAngleFromUp = 85f; // 0° below horizon = 90° from radial up. Allows "cruising".
     private const float MaxDescentAngleFromUp = 120f; // 30° below horizon = 120° from radial up
 
     public static (float3, quaternion) CalculateNext(LocalTransform transform, GuidePathComponent guidePath,
@@ -33,7 +33,7 @@ public class NavigationCalculator
     {
         float descentStartDist = targetHeight * 2.5f;
         
-        if (distToEnd <= descentStartDist)
+        if (distToEnd <= descentStartDist || currentHeight >= targetHeight * 1.1)
         {
             return FlightPhase.Descending;
         }
