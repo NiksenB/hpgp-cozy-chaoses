@@ -24,7 +24,7 @@ public class NavigationCalculator
         float currentHeight = math.length(transform.Position) - planetRadius;
         float distToEnd = math.length(transform.Position - guidePath.EndPoint);
         
-        FlightPhase phase = DetermineFlightPhase(currentHeight, guidePath.TargetHeight, distToEnd);
+        FlightPhase phase = DetermineFlightPhase(currentHeight, guidePath.TargetAltitude, distToEnd);
         
         return Calculate(transform, guidePath, speed, deltaTime, phase);
     }
@@ -74,7 +74,7 @@ public class NavigationCalculator
         {
             return guidePath.EndPoint;
         }
-        return guidePath.EndPoint + math.normalize(guidePath.EndPoint) * guidePath.TargetHeight;
+        return guidePath.EndPoint + math.normalize(guidePath.EndPoint) * guidePath.TargetAltitude;
     }
     
 private static float3 ClampToAngleLimits(float3 direction, float3 up, FlightPhase phase)

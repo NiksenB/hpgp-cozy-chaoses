@@ -142,7 +142,7 @@ public partial struct MoveGuidesAvoidCollisionJob : IJobEntity
         float3 surfaceTangent = math.normalize(toDest - toCenter * math.dot(toDest, toCenter));
 
         float3 rotationAxis = math.normalize(math.cross(toCenter, surfaceTangent));
-        float rotationAngle = DeltaTime * speed / (Planet.Radius + guidePath.TargetHeight);
+        float rotationAngle = DeltaTime * speed / (Planet.Radius + guidePath.TargetAltitude);
 
         quaternion rot = quaternion.AxisAngle(rotationAxis, rotationAngle);
         float3 newDirection = math.mul(rot, toCenter);

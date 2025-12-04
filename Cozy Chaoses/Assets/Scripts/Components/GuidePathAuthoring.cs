@@ -30,7 +30,7 @@ namespace Components
             {
                 StartPoint = authoring.transform.position,
                 EndPoint = authoring.endPoint,
-                TargetHeight = authoring.targetHeight,
+                TargetAltitude = authoring.targetHeight,
             };
         }
 
@@ -68,7 +68,7 @@ public struct GuidePathComponent : IComponentData
 {
     public float3 StartPoint;
     public float3 EndPoint;
-    public float TargetHeight;
+    public float TargetAltitude;
 }
 
 public struct GuideTargetTag : IComponentData

@@ -101,7 +101,7 @@ public partial struct SpawnPlanes : IJobEntity
         {
             StartPoint = sourceTransform.Position,
             EndPoint = dest,
-            TargetHeight = random.NextFloat(0.001f * Config.PlanetRadius * dist , 0.002f * Config.PlanetRadius * dist), 
+            TargetAltitude = random.NextFloat(0.001f * Config.PlanetRadius * dist , 0.002f * Config.PlanetRadius * dist), 
         });
     }
 }
