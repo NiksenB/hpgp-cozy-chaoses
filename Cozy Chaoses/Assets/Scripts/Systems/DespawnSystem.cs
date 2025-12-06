@@ -1,12 +1,7 @@
 using Unity.Entities;
 using Unity.Burst;
-using Unity.Mathematics;
-using Unity.Rendering;
-using Unity.Transforms;
-using Unity.VisualScripting;
-using Random = Unity.Mathematics.Random;
 
-public partial struct PlaneDespawnSystem : ISystem
+public partial struct DespawnSystem : ISystem
 {
     [BurstCompile]
     public void OnCreate(ref SystemState state)
@@ -21,7 +16,7 @@ public partial struct PlaneDespawnSystem : ISystem
         var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
             .CreateCommandBuffer(state.WorldUnmanaged);
         
-        state.Dependency = new DespawnPlanes
+        state.Dependency = new DespawnJob
         {
             ECB = ecb,
         }.Schedule(state.Dependency);
@@ -30,7 +25,7 @@ public partial struct PlaneDespawnSystem : ISystem
 
 [BurstCompile]
 [WithAll(typeof(ShouldDespawnTag))]
-public partial struct DespawnPlanes : IJobEntity
+public partial struct DespawnJob : IJobEntity
 {
     public EntityCommandBuffer ECB;
     public void Execute(Entity entity)

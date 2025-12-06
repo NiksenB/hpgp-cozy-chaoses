@@ -39,7 +39,9 @@ namespace Systems
                 AirportCount = configData.airportCount,
                 
                 PlanetPrefab = prefabConfig.PlanetPrefab,
-                PlanetRadius = configData.planetRadius
+                PlanetRadius = configData.planetRadius,
+                
+                ExplosionPrefab = prefabConfig.ExplosionPrefab,
             });
             state.EntityManager.RemoveComponent<PrefabConfigComponent>(entity);
         }
