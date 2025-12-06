@@ -36,6 +36,8 @@ partial struct PlaneCollisionSystem : ISystem
         _localTransformLookup.Update(ref state);
 
         var simulation = SystemAPI.GetSingleton<SimulationSingleton>();
+
+        var elapsed = (float)SystemAPI.Time.ElapsedTime;
         
         var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
             .CreateCommandBuffer(state.WorldUnmanaged);
@@ -45,6 +47,7 @@ partial struct PlaneCollisionSystem : ISystem
         state.Dependency = new PlaneCollisionJob
         {
             ECB = ecb,
+            Elapsed = elapsed,
             Explosion = config.ExplosionPrefab,
             PlaneStabilizerLookup = _planeStabilizerLookup,
             LocalTransformLookup = _localTransformLookup
@@ -62,6 +65,7 @@ partial struct PlaneCollisionSystem : ISystem
     struct PlaneCollisionJob : ICollisionEventsJob
     {
         public EntityCommandBuffer ECB;
+        public float Elapsed;
         public Entity Explosion;
         public ComponentLookup<PlaneStabilizerComponent> PlaneStabilizerLookup;
         [ReadOnly] public ComponentLookup<LocalTransform> LocalTransformLookup;
@@ -91,7 +95,7 @@ partial struct PlaneCollisionSystem : ISystem
             
             var explosionEntity = ECB.Instantiate(Explosion);
             
-            ECB.SetComponent(explosionEntity, new ExplosionComponent{ Fade = 10f }); // TODO actually use the fade countdown variable for something. And give it a better name.
+            ECB.SetComponent(explosionEntity, new ExplosionComponent{ Duration = 10f, Startpoint = Elapsed}); 
             
             ECB.SetComponent(explosionEntity, 
                 LocalTransform.FromPositionRotationScale(collisionPoint, quaternion.identity, 10f));

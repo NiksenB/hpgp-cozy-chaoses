@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class ExplosionAuthoring : MonoBehaviour
 {
-    public float fade; 
+    public float duration;
+    public float startPoint;
     class Baker : Baker<ExplosionAuthoring>
     {
         public override void Bake(ExplosionAuthoring authoring)
@@ -12,7 +13,8 @@ public class ExplosionAuthoring : MonoBehaviour
             var entity = GetEntity(TransformUsageFlags.Dynamic);
             AddComponent(entity, new ExplosionComponent
             {
-                Fade = authoring.fade,
+                Duration = authoring.duration,
+                Startpoint = authoring.startPoint,
             });
         }
     }
@@ -20,5 +22,6 @@ public class ExplosionAuthoring : MonoBehaviour
 
 public struct ExplosionComponent : IComponentData
 {
-    public float Fade;
+    public float Duration;
+    public float Startpoint;
 }
