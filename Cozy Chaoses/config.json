@@ -1,6 +1,7 @@
 {
-    "airportCount": 25,
+    "airportCount": 20,
     "planetRadius": 100.0,
+    "planeSpeed": 8.0,
     "planeRotationSpeed": 6.0,
     "planeDamping": 7.0,
     "planeMaxAngularSpeed": 6.0,
