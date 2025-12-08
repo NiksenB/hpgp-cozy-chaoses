@@ -9,8 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7066413823870839734}
-  - component: {fileID: 405139617420435925}
   - component: {fileID: 122269142796607032}
+  - component: {fileID: 405139617420435925}
   - component: {fileID: 9014094126176287900}
   - component: {fileID: 2931206387654985954}
   m_Layer: 0
@@ -35,14 +35,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &405139617420435925
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1607644553271017260}
-  m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!23 &122269142796607032
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -68,7 +60,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 8f5b6ce4d77701d428a74657c7c37e1e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -91,6 +83,14 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &405139617420435925
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1607644553271017260}
+  m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!114 &9014094126176287900
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -116,4 +116,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83c8dec0a36781c40a0f6ccc269c0615, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ExplosionAuthoring
-  fadeRate: 2
+  duration: 0
+  startPoint: 0
+  lifetime: 0
