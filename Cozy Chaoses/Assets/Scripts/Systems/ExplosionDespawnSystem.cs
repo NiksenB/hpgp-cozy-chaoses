@@ -1,8 +1,7 @@
 using Unity.Entities;
 using Unity.Burst;
 
-// TODO decide if this logic should be part of DespawnSystem
-public partial struct ExplosionFadingSystem : ISystem
+public partial struct ExplosionDespawnSystem : ISystem
 {
     [BurstCompile]
     public void OnCreate(ref SystemState state)
@@ -15,9 +14,9 @@ public partial struct ExplosionFadingSystem : ISystem
     {
         var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
             .CreateCommandBuffer(state.WorldUnmanaged);
-        
+
         var elapsed = (float)SystemAPI.Time.ElapsedTime;
-        
+
         state.Dependency = new ManageExplosions
         {
             ECB = ecb,
@@ -31,9 +30,12 @@ public partial struct ManageExplosions : IJobEntity
 {
     public EntityCommandBuffer ECB;
     public float Elapsed;
+
     public void Execute(Entity entity, in ExplosionComponent explosion)
     {
-        if (Elapsed >= explosion.Startpoint + explosion.Duration)
+        // This number must match the duration of the explosion particle system
+        var duration = 1f;
+        if (Elapsed >= explosion.Startpoint + duration)
         {
             ECB.DestroyEntity(entity);
         }

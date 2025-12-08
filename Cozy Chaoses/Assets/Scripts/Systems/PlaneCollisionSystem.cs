@@ -23,10 +23,9 @@ partial struct PlaneCollisionSystem : ISystem
         state.RequireForUpdate<SimulationSingleton>();
         state.RequireForUpdate<ConfigComponent>();
         state.RequireForUpdate(state.GetEntityQuery(ComponentType.ReadWrite<PlaneStabilizerComponent>()));
-        
-        _planeStabilizerLookup = state.GetComponentLookup<PlaneStabilizerComponent>(false); 
-        _localTransformLookup = state.GetComponentLookup<LocalTransform>(true); 
 
+        _planeStabilizerLookup = state.GetComponentLookup<PlaneStabilizerComponent>(false);
+        _localTransformLookup = state.GetComponentLookup<LocalTransform>(true);
     }
 
     [BurstCompile]
@@ -38,12 +37,12 @@ partial struct PlaneCollisionSystem : ISystem
         var simulation = SystemAPI.GetSingleton<SimulationSingleton>();
 
         var elapsed = (float)SystemAPI.Time.ElapsedTime;
-        
+
         var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
             .CreateCommandBuffer(state.WorldUnmanaged);
 
         var config = SystemAPI.GetSingleton<ConfigComponent>();
-        
+
         state.Dependency = new PlaneCollisionJob
         {
             ECB = ecb,
@@ -57,7 +56,6 @@ partial struct PlaneCollisionSystem : ISystem
     [BurstCompile]
     public void OnDestroy(ref SystemState state)
     {
-
     }
 
     [BurstCompile]
@@ -77,28 +75,26 @@ partial struct PlaneCollisionSystem : ISystem
 
             var isBodyAPlane = PlaneStabilizerLookup.HasComponent(entityA);
             var isBodyBPlane = PlaneStabilizerLookup.HasComponent(entityB);
-            
+
             if (!isBodyAPlane || !isBodyBPlane)
                 return;
-            
+
             var planeStabilizerEntityA = PlaneStabilizerLookup.GetRefRW(entityA);
             var planeStabilizerEntityB = PlaneStabilizerLookup.GetRefRW(entityB);
-            
+
             // Despawn planes
             ECB.AddComponent(planeStabilizerEntityA.ValueRW.GuideEntity, new ShouldDespawnTag());
             ECB.AddComponent(planeStabilizerEntityB.ValueRW.GuideEntity, new ShouldDespawnTag());
-            
+
             // Spawn explosion
             var posA = LocalTransformLookup[entityA].Position;
             var posB = LocalTransformLookup[entityB].Position;
             var collisionPoint = (posA + posB) * 0.5f;
-            
+
             var explosionEntity = ECB.Instantiate(Explosion);
-            
-            ECB.SetComponent(explosionEntity, new ExplosionComponent{ Duration = 10f, Startpoint = Elapsed}); 
-            
-            ECB.SetComponent(explosionEntity, 
-                LocalTransform.FromPositionRotationScale(collisionPoint, quaternion.identity, 10f));
+            ECB.AddComponent(explosionEntity, new ExplosionComponent { Startpoint = Elapsed });
+            ECB.SetComponent(explosionEntity,
+                LocalTransform.FromPosition(collisionPoint));
         }
     }
 }
