@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 6355726901760819116}
   - component: {fileID: 3962010513085034187}
   - component: {fileID: 3745123210646323921}
-  - component: {fileID: 1912986119047804761}
   - component: {fileID: 3497364063022939769}
   m_Layer: 0
   m_Name: GuideAndPlane
@@ -115,27 +114,6 @@ MonoBehaviour:
     x: 0
     y: 0
     z: 0
---- !u!114 &1912986119047804761
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9146640197352250829}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 224b4e022f8d40c2a95435e9e3df0a72, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Components.PlanePathAuthoring
-  endPoint:
-    x: 0
-    y: 0
-    z: 0
-  controlPoint:
-    x: 0
-    y: 0
-    z: 0
-  targetHeight: 0
 --- !u!114 &3497364063022939769
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -219,6 +197,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 744e01d3d39888e4bb092f1d04f82869, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6007867376989986637}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 744e01d3d39888e4bb092f1d04f82869, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8923896638126293317}
   m_SourcePrefab: {fileID: 100100000, guid: 744e01d3d39888e4bb092f1d04f82869, type: 3}
 --- !u!4 &4927059395845842101 stripped
 Transform:
@@ -606,3 +587,15 @@ MonoBehaviour:
         Tag07: 0
     m_SerializedVersion: 1
   m_SerializedVersion: 1
+--- !u!114 &8923896638126293317
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5704863114601971215}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae56fc87fd084f3a9dc2bbc96799dce3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Components.JustSpawnedTagAuthoring

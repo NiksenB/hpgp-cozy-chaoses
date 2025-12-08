@@ -1,3 +1,4 @@
+using Components;
 using Unity.Entities;
 using Unity.Burst;
 using Unity.Collections;
@@ -70,6 +71,7 @@ public partial struct SpawnPlanes : IJobEntity
     public NativeArray<LocalTransform> Airports;
     public PlanetComponent Planet;
     
+    [BurstCompile]
     private void Execute(ref AirportComponent sourceComponent, in LocalTransform sourceTransform)
     {
         if (ElapsedTime < sourceComponent.NextPlaneSpawnTime)
@@ -79,8 +81,7 @@ public partial struct SpawnPlanes : IJobEntity
  
         var random = new Random((uint)ElapsedTime + 100);
         sourceComponent.NextPlaneSpawnTime += random.NextDouble(10d, 100d);
-        
-        Entity planeEntity = ECB.Instantiate(Config.PlanePrefab);
+        Entity planeAndGuideEntity = ECB.Instantiate(Config.PlanePrefab);
         
         var di = math.abs(random.NextInt()) % Airports.Length;
         
@@ -96,8 +97,8 @@ public partial struct SpawnPlanes : IJobEntity
         var up = math.normalize(sourceTransform.Position);
         var spawnPosition = sourceTransform.Position + up * 1f;
         
-        ECB.AddComponent(planeEntity, LocalTransform.FromPositionRotation(spawnPosition, sourceTransform.Rotation));
-        ECB.SetComponent(planeEntity, new GuidePathComponent
+        ECB.AddComponent(planeAndGuideEntity, LocalTransform.FromPositionRotation(spawnPosition, sourceTransform.Rotation));
+        ECB.AddComponent(planeAndGuideEntity, new GuidePathComponent
         {
             StartPoint = sourceTransform.Position,
             EndPoint = dest,
