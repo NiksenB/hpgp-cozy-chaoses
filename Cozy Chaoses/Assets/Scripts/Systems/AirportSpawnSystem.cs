@@ -70,7 +70,7 @@ public partial struct SpawnAirports : IJobEntity
             var up = math.normalize(positions[i] - sphereCenter);
             var rot = Quaternion.FromToRotation(Vector3.up, up);
             var pos = sphereCenter + up * sphereRadius;
-            var scale = sphereRadius * 0.05f; // Relative to planet size
+            var scale = 2f;
             
             var transform = LocalTransform.FromPositionRotationScale(pos, rot, scale);
             
