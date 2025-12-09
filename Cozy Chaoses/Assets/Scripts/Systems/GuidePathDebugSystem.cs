@@ -30,7 +30,6 @@ namespace Systems
 
             state.Dependency = new DrawLinesJob
             {
-                ECB = ecb,
                 Planet = planet,
                 Config = config,
                 DeltaTime = dt
@@ -39,7 +38,6 @@ namespace Systems
 
         public partial struct DrawLinesJob : IJobEntity
         {
-            public EntityCommandBuffer ECB;
             public float DeltaTime;
             public PlanetComponent Planet;
             public ConfigComponent Config;

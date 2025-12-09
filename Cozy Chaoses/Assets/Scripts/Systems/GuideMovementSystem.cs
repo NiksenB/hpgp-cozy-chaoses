@@ -103,7 +103,7 @@ public partial struct MoveGuidesAvoidCollisionJob : IJobEntity
         var up = math.normalize(pos);
         var currentForward = math.normalize(math.forward(transform.Rotation.value));
 
-        var idealDir = float3.zero;
+        float3 idealDir;
         var dot = math.dot(toTar, currentForward);
 
         float3 toDest;

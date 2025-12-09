@@ -8,8 +8,8 @@ using Random = Unity.Mathematics.Random;
 [UpdateBefore(typeof(TransformSystemGroup))]
 public partial struct PlaneAndGuideSpawnSystem : ISystem
 {
-    private float timer;
-    private NativeArray<LocalTransform> airports;
+    private float _timer;
+    private NativeArray<LocalTransform> _airports;
 
     [BurstCompile]
     public void OnCreate(ref SystemState state)
@@ -28,12 +28,12 @@ public partial struct PlaneAndGuideSpawnSystem : ISystem
 
         var config = SystemAPI.GetSingleton<ConfigComponent>();
 
-        if (!airports.IsCreated || airports.Length == 0)
+        if (!_airports.IsCreated || _airports.Length == 0)
         {
             var query = SystemAPI.QueryBuilder()
                 .WithAll<AirportComponent, LocalTransform>().Build();
 
-            airports = query.ToComponentDataArray<LocalTransform>(Allocator.Persistent);
+            _airports = query.ToComponentDataArray<LocalTransform>(Allocator.Persistent);
         }
 
         var planet = SystemAPI.GetSingleton<PlanetComponent>();
@@ -45,15 +45,14 @@ public partial struct PlaneAndGuideSpawnSystem : ISystem
             ECB = ecb,
             Config = config,
             ElapsedTime = elapsedTime,
-            Airports = airports,
-            Planet = planet
+            Airports = _airports
         }.Schedule(state.Dependency);
     }
 
     [BurstCompile]
     public void OnDestroy(ref SystemState state)
     {
-        airports.Dispose();
+        _airports.Dispose();
     }
 }
 
@@ -65,7 +64,6 @@ public partial struct SpawnPlanes : IJobEntity
     public ConfigComponent Config;
     public double ElapsedTime;
     public NativeArray<LocalTransform> Airports;
-    public PlanetComponent Planet;
 
     [BurstCompile]
     private void Execute(ref AirportComponent sourceComponent, in LocalTransform sourceTransform)
