@@ -6,6 +6,7 @@ public class ConfigAuthoring : MonoBehaviour
     public GameObject planePrefab;
     public GameObject airportPrefab;
     public GameObject planetPrefab;
+    public GameObject explosionPrefab;
     
     class Baker : Baker<ConfigAuthoring>
     {
@@ -17,6 +18,7 @@ public class ConfigAuthoring : MonoBehaviour
                 PlanetPrefab = GetEntity(authoring.planetPrefab, TransformUsageFlags.Dynamic),
                 AirportPrefab = GetEntity(authoring.airportPrefab, TransformUsageFlags.Dynamic),
                 PlanePrefab = GetEntity(authoring.planePrefab, TransformUsageFlags.Dynamic),
+                ExplosionPrefab = GetEntity(authoring.explosionPrefab, TransformUsageFlags.Dynamic)
             });
         }
     }
@@ -27,6 +29,7 @@ public struct PrefabConfigComponent : IComponentData
     public Entity PlanePrefab;
     public Entity AirportPrefab;
     public Entity PlanetPrefab;
+    public Entity ExplosionPrefab;
 }
 
 public struct ConfigComponent : IComponentData
@@ -45,4 +48,6 @@ public struct ConfigComponent : IComponentData
     
     public Entity PlanetPrefab;
     public float PlanetRadius;
+
+    public Entity ExplosionPrefab;
 }
