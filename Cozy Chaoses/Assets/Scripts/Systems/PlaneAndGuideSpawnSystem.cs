@@ -107,7 +107,6 @@ public partial struct SpawnPlanes : IJobEntity
             LocalTransform.FromPositionRotation(spawnPosition, spawnRotation));
         ECB.AddComponent(planeAndGuideEntity, new GuidePathComponent
         {
-            StartPoint = sourceTransform.Position,
             EndPoint = dest,
             TargetAltitude = random.NextFloat(0.01f * Config.PlanetRadius * (dist / Config.PlanetRadius),
                 0.05f * Config.PlanetRadius * (dist / Config.PlanetRadius))

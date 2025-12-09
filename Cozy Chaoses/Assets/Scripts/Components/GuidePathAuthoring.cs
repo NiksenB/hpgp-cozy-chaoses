@@ -7,7 +7,6 @@ namespace Components
     public class GuidePathAuthoring : MonoBehaviour
     {
         public float3 endPoint;
-        public float3 controlPoint;
         public float targetHeight;
 
         private void OnDrawGizmos()
@@ -42,7 +41,6 @@ namespace Components
         {
             return new GuidePathComponent
             {
-                StartPoint = authoring.transform.position,
                 EndPoint = authoring.endPoint,
                 TargetAltitude = authoring.targetHeight
             };
@@ -57,8 +55,6 @@ namespace Components
                 var component = GetPathComponent(authoring);
 
                 AddComponent(entity, component);
-
-                AddComponent<GuideTargetTag>(entity);
             }
         }
     }
@@ -66,11 +62,6 @@ namespace Components
 
 public struct GuidePathComponent : IComponentData
 {
-    public float3 StartPoint;
     public float3 EndPoint;
     public float TargetAltitude;
-}
-
-public struct GuideTargetTag : IComponentData
-{
 }
