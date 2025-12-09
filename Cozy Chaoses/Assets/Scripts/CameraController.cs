@@ -9,11 +9,11 @@ public class CameraController : MonoBehaviour
 
     public float speed = 100f;
 
-    private Vector2 input;
+    private Vector2 _input;
 
     private void Update()
     {
-        input = cameraMoveRotate.ReadValue<Vector2>();
+        _input = cameraMoveRotate.ReadValue<Vector2>();
     }
 
     private void FixedUpdate()
@@ -24,18 +24,18 @@ public class CameraController : MonoBehaviour
 
         if (zoomMod)
         {
-            var zoomDirection = cameraTransform.forward * input.y;
+            var zoomDirection = cameraTransform.forward * _input.y;
             cameraTransform.position += speed * Time.deltaTime * zoomDirection;
         }
         else if (rotateMod)
         {
-            var pitch = -input.y * speed * Time.deltaTime;
-            var yaw = input.x * speed * Time.deltaTime;
+            var pitch = -_input.y * speed * Time.deltaTime;
+            var yaw = _input.x * speed * Time.deltaTime;
             cameraTransform.Rotate(pitch, yaw, 0f);
         }
         else
         {
-            var moveDirection = cameraTransform.rotation * input.normalized;
+            var moveDirection = cameraTransform.rotation * _input.normalized;
             cameraTransform.position += speed * Time.deltaTime * moveDirection;
         }
     }

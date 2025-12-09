@@ -14,16 +14,12 @@ namespace Systems
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
-            state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>();
             state.RequireForUpdate<PlanetComponent>();
             state.RequireForUpdate<ConfigComponent>();
         }
 
         public void OnUpdate(ref SystemState state)
         {
-            var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
-                .CreateCommandBuffer(state.WorldUnmanaged);
-
             var planet = SystemAPI.GetSingleton<PlanetComponent>();
             var config = SystemAPI.GetSingleton<ConfigComponent>();
             var dt = SystemAPI.Time.fixedDeltaTime;

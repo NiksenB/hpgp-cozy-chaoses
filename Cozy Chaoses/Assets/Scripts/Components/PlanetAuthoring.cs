@@ -18,5 +18,4 @@ public struct PlanetComponent : IComponentData
 {
     public float Radius;
     public float3 Center;
-    public float ScaleFactor => Radius / 6371f;
 }

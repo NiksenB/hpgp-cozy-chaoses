@@ -125,7 +125,7 @@ public partial struct StabilizePlaneJob : IJobEntity
         velocity.Angular = math.lerp(velocity.Angular, targetAngularVelocity, blendFactor);
     }
 
-    public void DrawDebug(LocalTransform transform, quaternion currentRotation)
+    public static void DrawDebug(LocalTransform transform, quaternion currentRotation)
     {
         var planeForward = math.mul(currentRotation, new float3(0, 0, 1));
         var planeUp = math.mul(currentRotation, new float3(0, 1, 0));
