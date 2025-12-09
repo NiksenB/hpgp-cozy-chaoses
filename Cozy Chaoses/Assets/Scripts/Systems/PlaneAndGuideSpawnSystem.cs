@@ -96,8 +96,27 @@ public partial struct SpawnPlanes : IJobEntity
         // Spawn a little above the airport
         var up = math.normalize(sourceTransform.Position);
         var spawnPosition = sourceTransform.Position + up * 1f;
-        
-        ECB.AddComponent(planeAndGuideEntity, LocalTransform.FromPositionRotation(spawnPosition, sourceTransform.Rotation));
+
+        // Get rotation
+        float3 directionToDest = dest - spawnPosition;
+        float3 forward = directionToDest - (math.dot(directionToDest, up) * up);
+
+        // // Safety check, in case the point is directly above/below the spawn point, aka directly through the planet
+        if (math.lengthsq(forward) < 1e-4f)
+        {
+            forward = math.cross(up, new float3(1, 0, 0));
+            // If the problem persists, try another axis
+            if (math.lengthsq(forward) < 1e-4f) // If up was (1,0,0)
+                 forward = math.cross(up, new float3(0, 0, 1));
+        }
+
+        forward = math.normalize(forward);
+
+        // Looking forward with up direction being away from planet center
+        quaternion spawnRotation = quaternion.LookRotation(forward, up);
+
+        ECB.AddComponent(planeAndGuideEntity,
+            LocalTransform.FromPositionRotation(spawnPosition, spawnRotation));
         ECB.AddComponent(planeAndGuideEntity, new GuidePathComponent
         {
             StartPoint = sourceTransform.Position,
