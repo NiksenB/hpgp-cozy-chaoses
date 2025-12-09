@@ -14,7 +14,7 @@ public class PlaneStabilizerAuthoring : MonoBehaviour
 
             AddComponent(entity, new PlaneStabilizerComponent
             {
-                GuideEntity = guideEntity,
+                GuideEntity = guideEntity
             });
         }
     }
