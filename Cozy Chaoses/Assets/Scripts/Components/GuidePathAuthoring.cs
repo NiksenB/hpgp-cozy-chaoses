@@ -74,8 +74,3 @@ public struct GuidePathComponent : IComponentData
 public struct GuideTargetTag : IComponentData
 {
 }
-
-public struct PlaneStabilizer : IComponentData
-{
-    public Entity TargetEntity;
-}
