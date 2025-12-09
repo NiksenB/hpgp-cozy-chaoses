@@ -18,25 +18,25 @@ public class CameraController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        var camera = Camera.main.transform;
+        var cameraTransform = Camera.main.transform;
         var rotateMod = cameraRotateModifier.IsPressed();
         var zoomMod = cameraZoomModifier.IsPressed();
 
         if (zoomMod)
         {
-            var zoomDirection = camera.forward * input.y;
-            camera.position += speed * Time.deltaTime * zoomDirection;
+            var zoomDirection = cameraTransform.forward * input.y;
+            cameraTransform.position += speed * Time.deltaTime * zoomDirection;
         }
         else if (rotateMod)
         {
             var pitch = -input.y * speed * Time.deltaTime;
             var yaw = input.x * speed * Time.deltaTime;
-            camera.Rotate(pitch, yaw, 0f);
+            cameraTransform.Rotate(pitch, yaw, 0f);
         }
         else
         {
-            var moveDirection = camera.rotation * input.normalized;
-            camera.position += speed * Time.deltaTime * moveDirection;
+            var moveDirection = cameraTransform.rotation * input.normalized;
+            cameraTransform.position += speed * Time.deltaTime * moveDirection;
         }
     }
 
