@@ -1,8 +1,9 @@
 using Unity.Burst;
 using Unity.Entities;
-using Unity.Mathematics;
 using Unity.Transforms;
-using UnityEngine; // Required for Debug.DrawLine
+using UnityEngine;
+
+// Required for Debug.DrawLine
 
 namespace Systems
 {
@@ -32,7 +33,7 @@ namespace Systems
                 ECB = ecb,
                 Planet = planet,
                 Config = config,
-                DeltaTime = dt,
+                DeltaTime = dt
             }.Schedule(state.Dependency);
         }
 
@@ -47,22 +48,23 @@ namespace Systems
             {
                 Vector3 start = transform.Position;
 
-                int segments = 100;
-                Vector3 prevPos = start;
+                var segments = 100;
+                var prevPos = start;
                 Quaternion prevRotation = transform.Rotation;
 
-                for (int i = 1; i <= segments; i++)
+                for (var i = 1; i <= segments; i++)
                 {
-                    LocalTransform newTransform = LocalTransform.FromPositionRotation(prevPos, prevRotation);
+                    var newTransform = LocalTransform.FromPositionRotation(prevPos, prevRotation);
                     // float t = (float)i / segments;
-                    var result = NavigationCalculator.CalculateNext(newTransform, guidePath, Config.PlaneSpeed, Planet.Radius, DeltaTime);
-                    
+                    var result = NavigationCalculator.CalculateNext(newTransform, guidePath, Config.PlaneSpeed,
+                        Planet.Radius, DeltaTime);
+
 
                     Debug.DrawLine(prevPos, result.Item1, Color.cyan);
                     prevPos = result.Item1;
                     prevRotation = result.Item2;
                 }
-                
+
                 // Draw line up from transform position to indicate height
                 Debug.DrawLine(transform.Position, transform.Position + transform.Up() * 2f, Color.yellow);
                 Debug.DrawLine(transform.Position, transform.Position + transform.Forward() * 2f, Color.red);

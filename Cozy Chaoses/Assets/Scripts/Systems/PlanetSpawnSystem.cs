@@ -1,10 +1,7 @@
-using Unity.Entities;
 using Unity.Burst;
+using Unity.Entities;
 using Unity.Mathematics;
-using Unity.Rendering;
 using Unity.Transforms;
-using Unity.VisualScripting;
-using Random = Unity.Mathematics.Random;
 
 public partial struct PlanetSpawnSystem : ISystem
 {
@@ -20,7 +17,7 @@ public partial struct PlanetSpawnSystem : ISystem
     {
         // Disable in first update, so it updates only once
         state.Enabled = false;
-        
+
         var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
             .CreateCommandBuffer(state.WorldUnmanaged);
 
@@ -35,14 +32,15 @@ public partial struct PlanetSpawnSystem : ISystem
 public partial struct SpawnPlanet : IJobEntity
 {
     public EntityCommandBuffer ECB;
+
     public void Execute(in ConfigComponent configComponent)
     {
         var planetEntity = ECB.Instantiate(configComponent.PlanetPrefab);
-        
+
         // TODO: Should probably be configurable
         var sphereCenter = new float3(0, 0, 0);
         var sphereRadius = configComponent.PlanetRadius;
-        var transform = LocalTransform.FromPosition(sphereCenter).ApplyScale(sphereRadius*2); // Assume unit sphere
+        var transform = LocalTransform.FromPosition(sphereCenter).ApplyScale(sphereRadius * 2); // Assume unit sphere
         ECB.AddComponent(planetEntity, transform);
         ECB.AddComponent(planetEntity, new PlanetComponent
         {

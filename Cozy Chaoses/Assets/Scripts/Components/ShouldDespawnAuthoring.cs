@@ -1,9 +1,9 @@
 using Unity.Entities;
 using UnityEngine;
 
-class ShouldDespawnAuthoring : MonoBehaviour
+internal class ShouldDespawnAuthoring : MonoBehaviour
 {
-    class Baker : Baker<ShouldDespawnAuthoring>
+    private class Baker : Baker<ShouldDespawnAuthoring>
     {
         public override void Bake(ShouldDespawnAuthoring authoring)
         {

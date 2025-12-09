@@ -1,12 +1,8 @@
-using Components;
-using Unity.Entities;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Entities;
 using Unity.Mathematics;
-using Unity.Physics.Authoring;
 using Unity.Transforms;
-using Unity.VisualScripting;
-using UnityEngine;
 using Random = Unity.Mathematics.Random;
 
 [UpdateBefore(typeof(TransformSystemGroup))]
@@ -29,17 +25,17 @@ public partial struct PlaneAndGuideSpawnSystem : ISystem
     {
         var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
             .CreateCommandBuffer(state.WorldUnmanaged);
-        
+
         var config = SystemAPI.GetSingleton<ConfigComponent>();
-        
+
         if (!airports.IsCreated || airports.Length == 0)
         {
             var query = SystemAPI.QueryBuilder()
                 .WithAll<AirportComponent, LocalTransform>().Build();
-            
+
             airports = query.ToComponentDataArray<LocalTransform>(Allocator.Persistent);
         }
-        
+
         var planet = SystemAPI.GetSingleton<PlanetComponent>();
 
         var elapsedTime = SystemAPI.Time.ElapsedTime;
@@ -50,7 +46,7 @@ public partial struct PlaneAndGuideSpawnSystem : ISystem
             Config = config,
             ElapsedTime = elapsedTime,
             Airports = airports,
-            Planet = planet,
+            Planet = planet
         }.Schedule(state.Dependency);
     }
 
@@ -70,36 +66,30 @@ public partial struct SpawnPlanes : IJobEntity
     public double ElapsedTime;
     public NativeArray<LocalTransform> Airports;
     public PlanetComponent Planet;
-    
+
     [BurstCompile]
     private void Execute(ref AirportComponent sourceComponent, in LocalTransform sourceTransform)
     {
-        if (ElapsedTime < sourceComponent.NextPlaneSpawnTime)
-        {
-            return;
-        }
- 
+        if (ElapsedTime < sourceComponent.NextPlaneSpawnTime) return;
+
         var random = new Random((uint)ElapsedTime + 100);
         sourceComponent.NextPlaneSpawnTime += random.NextDouble(10d, 100d);
-        Entity planeAndGuideEntity = ECB.Instantiate(Config.PlanePrefab);
-        
+        var planeAndGuideEntity = ECB.Instantiate(Config.PlanePrefab);
+
         var di = math.abs(random.NextInt()) % Airports.Length;
-        
-        while (sourceTransform.Position.Equals(Airports[di].Position))
-        {
-            di = (di+1) %  Airports.Length;
-        }
+
+        while (sourceTransform.Position.Equals(Airports[di].Position)) di = (di + 1) % Airports.Length;
 
         var dest = Airports[di].Position;
         var dist = math.length(dest - sourceTransform.Position);
-        
+
         // Spawn a little above the airport
         var up = math.normalize(sourceTransform.Position);
         var spawnPosition = sourceTransform.Position + up * 1f;
 
         // Get rotation
-        float3 directionToDest = dest - spawnPosition;
-        float3 forward = directionToDest - (math.dot(directionToDest, up) * up);
+        var directionToDest = dest - spawnPosition;
+        var forward = directionToDest - math.dot(directionToDest, up) * up;
 
         // // Safety check, in case the point is directly above/below the spawn point, aka directly through the planet
         if (math.lengthsq(forward) < 1e-4f)
@@ -107,13 +97,13 @@ public partial struct SpawnPlanes : IJobEntity
             forward = math.cross(up, new float3(1, 0, 0));
             // If the problem persists, try another axis
             if (math.lengthsq(forward) < 1e-4f) // If up was (1,0,0)
-                 forward = math.cross(up, new float3(0, 0, 1));
+                forward = math.cross(up, new float3(0, 0, 1));
         }
 
         forward = math.normalize(forward);
 
         // Looking forward with up direction being away from planet center
-        quaternion spawnRotation = quaternion.LookRotation(forward, up);
+        var spawnRotation = quaternion.LookRotation(forward, up);
 
         ECB.AddComponent(planeAndGuideEntity,
             LocalTransform.FromPositionRotation(spawnPosition, spawnRotation));
@@ -121,7 +111,8 @@ public partial struct SpawnPlanes : IJobEntity
         {
             StartPoint = sourceTransform.Position,
             EndPoint = dest,
-            TargetAltitude = random.NextFloat(0.01f * Config.PlanetRadius * (dist/Config.PlanetRadius) , 0.05f * Config.PlanetRadius * (dist/Config.PlanetRadius)),
+            TargetAltitude = random.NextFloat(0.01f * Config.PlanetRadius * (dist / Config.PlanetRadius),
+                0.05f * Config.PlanetRadius * (dist / Config.PlanetRadius))
         });
     }
 }

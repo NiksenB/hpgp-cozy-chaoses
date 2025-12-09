@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using Unity.Burst;
 using Unity.Entities;
@@ -19,46 +20,46 @@ namespace Systems
         {
             state.Enabled = false;
 
-            ConfigFileData configData = GetConfig();
+            var configData = GetConfig();
 
             CameraController.AdjustCameraPosition(configData.planetRadius);
-            
+
             var entity = SystemAPI.GetSingletonEntity<PrefabConfigComponent>();
-            PrefabConfigComponent prefabConfig = SystemAPI.GetSingleton<PrefabConfigComponent>();
+            var prefabConfig = SystemAPI.GetSingleton<PrefabConfigComponent>();
 
             state.EntityManager.AddComponentData(entity, new ConfigComponent
             {
                 PlanePrefab = prefabConfig.PlanePrefab,
                 PlaneRotationSpeed = configData.planeRotationSpeed,
-                PlaneSpeed =  configData.planeSpeed,
+                PlaneSpeed = configData.planeSpeed,
                 PlaneDamping = configData.planeDamping,
                 PlaneMaxAngularSpeed = configData.planeMaxAngularSpeed,
                 PlaneResponseSpeed = configData.planeResponseSpeed,
                 PlaneForwardWeight = configData.planeForwardWeight,
                 PlaneUpWeight = configData.planeUpWeight,
-                
+
                 AirportPrefab = prefabConfig.AirportPrefab,
                 AirportCount = configData.airportCount,
-                
+
                 PlanetPrefab = prefabConfig.PlanetPrefab,
                 PlanetRadius = configData.planetRadius,
-                
-                ExplosionPrefab = prefabConfig.ExplosionPrefab,
+
+                ExplosionPrefab = prefabConfig.ExplosionPrefab
             });
             state.EntityManager.RemoveComponent<PrefabConfigComponent>(entity);
         }
-        
+
         private ConfigFileData GetConfig()
         {
             // Get the location of the application executable
-            string currDir = System.Environment.CurrentDirectory;
-            string configFilePath = Path.Combine(currDir, "config.json");
-            
+            var currDir = Environment.CurrentDirectory;
+            var configFilePath = Path.Combine(currDir, "config.json");
+
             ConfigFileData configData;
-            
+
             if (File.Exists(configFilePath))
             {
-                string jsonString = System.IO.File.ReadAllText(configFilePath);
+                var jsonString = File.ReadAllText(configFilePath);
                 configData = JsonUtility.FromJson<ConfigFileData>(jsonString);
             }
             else
@@ -66,7 +67,7 @@ namespace Systems
                 Debug.LogWarning("Config file not found at " + configFilePath + ". Creating default config file.");
 
                 configData = GetDefaultConfig();
-                string jsonString = JsonUtility.ToJson(configData, true);
+                var jsonString = JsonUtility.ToJson(configData, true);
                 File.WriteAllText(configFilePath, jsonString);
             }
 
@@ -85,12 +86,12 @@ namespace Systems
                 planeMaxAngularSpeed = 6f,
                 planeResponseSpeed = 8f,
                 planeForwardWeight = 1.0f,
-                planeUpWeight = 0.5f,
+                planeUpWeight = 0.5f
             };
         }
     }
-    
-    struct ConfigFileData
+
+    internal struct ConfigFileData
     {
         public int airportCount;
         public float planetRadius;

@@ -1,5 +1,5 @@
-using UnityEngine;
 using Unity.Mathematics;
+using UnityEngine;
 using Random = Unity.Mathematics.Random;
 
 public class Utils

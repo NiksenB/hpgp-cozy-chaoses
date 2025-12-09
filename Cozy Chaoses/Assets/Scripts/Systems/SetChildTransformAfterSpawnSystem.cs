@@ -5,7 +5,6 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Transforms;
-using UnityEngine;
 
 namespace Systems
 {
@@ -24,12 +23,12 @@ namespace Systems
             // Based on: https://discussions.unity.com/t/what-is-the-proper-way-of-instantiating-an-entity-prefab-with-child-physics-bodies/910049/22 
             var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
                 .CreateCommandBuffer(state.WorldUnmanaged);
-            var transformLookup = SystemAPI.GetComponentLookup<LocalTransform>(isReadOnly: true);
-            
+            var transformLookup = SystemAPI.GetComponentLookup<LocalTransform>(true);
+
             state.Dependency = new SetInitialPlaneTransformJob
             {
                 ECB = ecb,
-                TransformLookup = transformLookup,
+                TransformLookup = transformLookup
             }.Schedule(state.Dependency);
         }
     }
@@ -40,22 +39,23 @@ namespace Systems
     {
         [ReadOnly] public ComponentLookup<LocalTransform> TransformLookup;
         public EntityCommandBuffer ECB;
-        
+
         // This is hacky and i kinda hate it, but I don't see another way right now
         [BurstCompile]
-        public void Execute(Entity entity, in PlaneStabilizerComponent planeStabilizerComponent, ref PhysicsVelocity velocity)
+        public void Execute(Entity entity, in PlaneStabilizerComponent planeStabilizerComponent,
+            ref PhysicsVelocity velocity)
         {
-            LocalTransform planeTransform = TransformLookup[entity];
-            LocalTransform guideTransform = TransformLookup[planeStabilizerComponent.GuideEntity];
-            
+            var planeTransform = TransformLookup[entity];
+            var guideTransform = TransformLookup[planeStabilizerComponent.GuideEntity];
+
             planeTransform.Position = guideTransform.Position;
             planeTransform.Rotation = guideTransform.Rotation;
-            
+
             ECB.SetComponent(entity, planeTransform);
 
             velocity.Angular = float3.zero;
             velocity.Linear = float3.zero;
-            
+
             ECB.RemoveComponent<JustSpawnedTag>(entity);
         }
     }

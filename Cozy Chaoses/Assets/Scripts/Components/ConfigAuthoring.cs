@@ -1,5 +1,5 @@
-using UnityEngine;
 using Unity.Entities;
+using UnityEngine;
 
 public class ConfigAuthoring : MonoBehaviour
 {
@@ -7,8 +7,8 @@ public class ConfigAuthoring : MonoBehaviour
     public GameObject airportPrefab;
     public GameObject planetPrefab;
     public GameObject explosionPrefab;
-    
-    class Baker : Baker<ConfigAuthoring>
+
+    private class Baker : Baker<ConfigAuthoring>
     {
         public override void Bake(ConfigAuthoring authoring)
         {
@@ -45,7 +45,7 @@ public struct ConfigComponent : IComponentData
 
     public Entity AirportPrefab;
     public int AirportCount;
-    
+
     public Entity PlanetPrefab;
     public float PlanetRadius;
 

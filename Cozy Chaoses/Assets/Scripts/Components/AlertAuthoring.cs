@@ -5,8 +5,8 @@ using UnityEngine;
 public class AlertAuthoring : MonoBehaviour
 {
     public float3 entityPos;
-    
-    class Baker : Baker<AlertAuthoring>
+
+    private class Baker : Baker<AlertAuthoring>
     {
         public override void Bake(AlertAuthoring authoring)
         {

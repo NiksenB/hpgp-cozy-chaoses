@@ -1,12 +1,11 @@
 using Unity.Entities;
 using UnityEngine;
 
-class CollidingAuthoring : MonoBehaviour
+internal class CollidingAuthoring : MonoBehaviour
 {
-    
 }
 
-class CollidingAuthoringBaker : Baker<CollidingAuthoring>
+internal class CollidingAuthoringBaker : Baker<CollidingAuthoring>
 {
     public override void Bake(CollidingAuthoring authoring)
     {
@@ -18,5 +17,5 @@ class CollidingAuthoringBaker : Baker<CollidingAuthoring>
 
 public struct CollidingComponent : IComponentData
 {
-    public Entity CollidedWith;   
+    public Entity CollidedWith;
 }

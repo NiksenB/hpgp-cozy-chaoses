@@ -4,14 +4,12 @@ using UnityEngine;
 
 public class PlanetAuthoring : MonoBehaviour
 {
-    class Baker : Baker<PlanetAuthoring>
+    private class Baker : Baker<PlanetAuthoring>
     {
         public override void Bake(PlanetAuthoring authoring)
         {
             var entity = GetEntity(TransformUsageFlags.Dynamic);
-            AddComponent(entity, new PlanetComponent
-            {
-            });
+            AddComponent(entity, new PlanetComponent());
         }
     }
 }

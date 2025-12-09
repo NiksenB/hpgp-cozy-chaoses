@@ -1,43 +1,19 @@
 using Unity.Entities;
-using UnityEngine;
 using Unity.Mathematics;
+using UnityEngine;
 
 namespace Components
 {
     public class GuidePathAuthoring : MonoBehaviour
     {
-        public float3 endPoint; 
+        public float3 endPoint;
         public float3 controlPoint;
         public float targetHeight;
-
-        private class GuidePathAuthoringBaker : Baker<GuidePathAuthoring>
-        {
-            public override void Bake(GuidePathAuthoring authoring)
-            {
-                var entity = GetEntity(TransformUsageFlags.Dynamic);
-                
-                var component = GetPathComponent(authoring);
-
-                AddComponent(entity, component);
-
-                AddComponent<GuideTargetTag>(entity);
-            }
-        }
-        
-        private static GuidePathComponent GetPathComponent(GuidePathAuthoring authoring)
-        {
-            return new GuidePathComponent
-            {
-                StartPoint = authoring.transform.position,
-                EndPoint = authoring.endPoint,
-                TargetAltitude = authoring.targetHeight,
-            };
-        }
 
         private void OnDrawGizmos()
         {
             Gizmos.color = Color.cyan;
-            Vector3 start = transform.position;
+            var start = transform.position;
             Vector3 end = endPoint;
             // float height = targetHeight;
 
@@ -60,6 +36,30 @@ namespace Components
             Gizmos.DrawSphere(start, 0.5f);
             Gizmos.DrawWireSphere(end, 0.5f);
             Gizmos.color = Color.red;
+        }
+
+        private static GuidePathComponent GetPathComponent(GuidePathAuthoring authoring)
+        {
+            return new GuidePathComponent
+            {
+                StartPoint = authoring.transform.position,
+                EndPoint = authoring.endPoint,
+                TargetAltitude = authoring.targetHeight
+            };
+        }
+
+        private class GuidePathAuthoringBaker : Baker<GuidePathAuthoring>
+        {
+            public override void Bake(GuidePathAuthoring authoring)
+            {
+                var entity = GetEntity(TransformUsageFlags.Dynamic);
+
+                var component = GetPathComponent(authoring);
+
+                AddComponent(entity, component);
+
+                AddComponent<GuideTargetTag>(entity);
+            }
         }
     }
 }

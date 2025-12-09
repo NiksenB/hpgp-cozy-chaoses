@@ -1,4 +1,3 @@
-
 using Unity.Entities;
 using UnityEngine;
 
@@ -11,15 +10,15 @@ public class PlaneStabilizerAuthoring : MonoBehaviour
     public float responseSpeed = 8f; // How quickly to correct orientation
     public float forwardWeight = 1.0f; // Weight for forward alignment
     public float upWeight = 0.5f; // Weight for up alignment
-    
-    class Baker : Baker<PlaneStabilizerAuthoring>
+
+    private class Baker : Baker<PlaneStabilizerAuthoring>
     {
         public override void Bake(PlaneStabilizerAuthoring authoring)
         {
             var entity = GetEntity(TransformUsageFlags.Dynamic);
             var guideEntity = GetEntity(authoring.guideObject, TransformUsageFlags.Dynamic);
-            
-            AddComponent<PlaneStabilizerComponent>(entity, new PlaneStabilizerComponent
+
+            AddComponent(entity, new PlaneStabilizerComponent
             {
                 GuideEntity = guideEntity,
                 RotationSpeed = authoring.rotationSpeed,
