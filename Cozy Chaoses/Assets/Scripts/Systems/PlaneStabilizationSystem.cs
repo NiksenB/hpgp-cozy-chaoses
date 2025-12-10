@@ -25,12 +25,108 @@ namespace Systems
 
             var config = SystemAPI.GetSingleton<ConfigComponent>();
 
-            state.Dependency = new StabilizePlaneJob
+            switch (config.ExecutionMode)
             {
-                TransformLookup = transformLookup,
-                DeltaTime = deltaTime,
-                Config = config
-            }.Schedule(state.Dependency);
+                case ExecutionMode.Main:
+                    foreach (var (velocity, transform, planeStabilizerComponent) in SystemAPI.Query<RefRW<PhysicsVelocity>, RefRO<LocalTransform>, RefRO<PlaneStabilizerComponent>>())
+                    {
+                        if (!transformLookup.HasComponent(planeStabilizerComponent.ValueRO.GuideEntity)) continue;
+
+                        var targetTransform = transformLookup[planeStabilizerComponent.ValueRO.GuideEntity];
+
+                        var currentRotation = math.normalizesafe(transform.ValueRO.Rotation);
+                        var targetRotation = math.normalizesafe(targetTransform.Rotation);
+
+                        StabilizePlaneJob.DrawDebug(transform.ValueRO, currentRotation);
+
+                        var currentForward = math.mul(currentRotation, new float3(0, 0, 1));
+                        var currentUp = math.mul(currentRotation, new float3(0, 1, 0));
+
+                        var targetForward = math.mul(targetRotation, new float3(0, 0, 1));
+                        var targetUp = math.mul(targetRotation, new float3(0, 1, 0));
+
+                        var angularError = float3.zero;
+
+                        var forwardCross = math.cross(currentForward, targetForward);
+                        var forwardDot = math.dot(currentForward, targetForward);
+
+                        var forwardSinAngle = math.length(forwardCross);
+                        if (forwardSinAngle > 0.0001f)
+                        {
+                            var forwardAxis = forwardCross / forwardSinAngle;
+                            var forwardAngle = math.atan2(forwardSinAngle, forwardDot);
+                            angularError += forwardAxis * forwardAngle * config.PlaneForwardWeight;
+                        }
+
+                        var targetUpProjected = targetUp - currentForward * math.dot(targetUp, currentForward);
+                        var targetUpProjLength = math.length(targetUpProjected);
+
+                        if (targetUpProjLength > 0.0001f)
+                        {
+                            targetUpProjected /= targetUpProjLength;
+
+                            var currentUpProjected = currentUp - currentForward * math.dot(currentUp, currentForward);
+                            var currentUpProjLength = math.length(currentUpProjected);
+
+                            if (currentUpProjLength > 0.0001f)
+                            {
+                                currentUpProjected /= currentUpProjLength;
+
+                                var upCross = math.cross(currentUpProjected, targetUpProjected);
+                                var upDot = math.dot(currentUpProjected, targetUpProjected);
+
+                                var upSinAngle = math.length(upCross);
+                                if (upSinAngle > 0.0001f)
+                                {
+                                    var upAxis = upCross / upSinAngle;
+                                    var upAngle = math.atan2(upSinAngle, upDot);
+                                    angularError += upAxis * upAngle * config.PlaneUpWeight;
+                                }
+                            }
+                        }
+
+                        if (math.lengthsq(angularError) < 0.000001f)
+                        {
+                            var newVelocity = velocity.ValueRO;
+                            newVelocity.Angular = math.lerp(velocity.ValueRO.Angular, float3.zero, math.saturate(config.PlaneDamping * deltaTime));
+                            velocity.ValueRW = newVelocity;
+                            continue;
+                        }
+
+                        var proportionalTerm = angularError * config.PlaneRotationSpeed;
+                        var derivativeTerm = velocity.ValueRO.Angular * config.PlaneDamping;
+
+                        var targetAngularVelocity = proportionalTerm - derivativeTerm;
+
+                        var speed = math.length(targetAngularVelocity);
+                        if (speed > config.PlaneMaxAngularSpeed)
+                            targetAngularVelocity = targetAngularVelocity / speed * config.PlaneMaxAngularSpeed;
+
+                        var blendFactor = 1f - math.exp(-config.PlaneResponseSpeed * deltaTime);
+                        var newAngularVelocity = velocity.ValueRO;
+                        newAngularVelocity.Angular = math.lerp(velocity.ValueRO.Angular, targetAngularVelocity, blendFactor);
+                        velocity.ValueRW = newAngularVelocity;
+                    }
+                    break;
+
+                case ExecutionMode.Schedule:
+                    state.Dependency = new StabilizePlaneJob
+                    {
+                        TransformLookup = transformLookup,
+                        DeltaTime = deltaTime,
+                        Config = config
+                    }.Schedule(state.Dependency);
+                    break;
+
+                case ExecutionMode.ScheduleParallel:
+                    state.Dependency = new StabilizePlaneJob
+                    {
+                        TransformLookup = transformLookup,
+                        DeltaTime = deltaTime,
+                        Config = config
+                    }.ScheduleParallel(state.Dependency);
+                    break;
+            }
         }
     }
 }

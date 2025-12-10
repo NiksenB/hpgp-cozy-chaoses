@@ -1,6 +1,13 @@
 using Unity.Entities;
 using UnityEngine;
 
+public enum ExecutionMode
+{
+    Main,
+    Schedule,
+    ScheduleParallel
+}
+
 public class ConfigAuthoring : MonoBehaviour
 {
     public GameObject planePrefab;
@@ -34,6 +41,8 @@ public struct PrefabConfigComponent : IComponentData
 
 public struct ConfigComponent : IComponentData
 {
+    public ExecutionMode ExecutionMode;
+
     public Entity PlanePrefab;
     public float PlaneSpeed; // How fast planes move
     public float PlaneRotationSpeed; // How fast to rotate towards target

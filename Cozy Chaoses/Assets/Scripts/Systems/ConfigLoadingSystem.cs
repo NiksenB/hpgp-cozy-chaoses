@@ -29,6 +29,8 @@ namespace Systems
 
             state.EntityManager.AddComponentData(entity, new ConfigComponent
             {
+                ExecutionMode = configData.executionMode,
+
                 PlanePrefab = prefabConfig.PlanePrefab,
                 PlaneRotationSpeed = configData.planeRotationSpeed,
                 PlaneSpeed = configData.planeSpeed,
@@ -78,6 +80,7 @@ namespace Systems
         {
             return new ConfigFileData
             {
+                executionMode = ExecutionMode.Schedule,
                 airportCount = 25,
                 planetRadius = 100f,
                 planeSpeed = 5f,
@@ -93,6 +96,7 @@ namespace Systems
 
     internal struct ConfigFileData
     {
+        public ExecutionMode executionMode;
         public int airportCount;
         public float planetRadius;
         public float planeSpeed;

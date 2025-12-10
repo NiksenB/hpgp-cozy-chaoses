@@ -24,12 +24,51 @@ namespace Systems
             var config = SystemAPI.GetSingleton<ConfigComponent>();
             var dt = SystemAPI.Time.fixedDeltaTime;
 
-            state.Dependency = new DrawLinesJob
+            switch (config.ExecutionMode)
             {
-                Planet = planet,
-                Config = config,
-                DeltaTime = dt
-            }.Schedule(state.Dependency);
+                case ExecutionMode.Main:
+                    foreach (var (transform, guidePath) in SystemAPI.Query<RefRO<LocalTransform>, RefRW<GuidePathComponent>>())
+                    {
+                        Vector3 start = transform.ValueRO.Position;
+
+                        var segments = 100;
+                        var prevPos = start;
+                        Quaternion prevRotation = transform.ValueRO.Rotation;
+
+                        for (var i = 1; i <= segments; i++)
+                        {
+                            var newTransform = LocalTransform.FromPositionRotation(prevPos, prevRotation);
+                            var result = NavigationCalculator.CalculateNext(newTransform, guidePath.ValueRO, config.PlaneSpeed,
+                                planet.Radius, dt);
+
+                            Debug.DrawLine(prevPos, result.Item1, Color.cyan);
+                            prevPos = result.Item1;
+                            prevRotation = result.Item2;
+                        }
+
+                        Debug.DrawLine(transform.ValueRO.Position, transform.ValueRO.Position + transform.ValueRO.Up() * 2f, Color.yellow);
+                        Debug.DrawLine(transform.ValueRO.Position, transform.ValueRO.Position + transform.ValueRO.Forward() * 2f, Color.red);
+                    }
+                    break;
+
+                case ExecutionMode.Schedule:
+                    state.Dependency = new DrawLinesJob
+                    {
+                        Planet = planet,
+                        Config = config,
+                        DeltaTime = dt
+                    }.Schedule(state.Dependency);
+                    break;
+
+                case ExecutionMode.ScheduleParallel:
+                    state.Dependency = new DrawLinesJob
+                    {
+                        Planet = planet,
+                        Config = config,
+                        DeltaTime = dt
+                    }.ScheduleParallel(state.Dependency);
+                    break;
+            }
         }
 
         public partial struct DrawLinesJob : IJobEntity
