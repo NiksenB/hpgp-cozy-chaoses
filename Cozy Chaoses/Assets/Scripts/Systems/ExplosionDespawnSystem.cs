@@ -1,5 +1,5 @@
-using Unity.Entities;
 using Unity.Burst;
+using Unity.Entities;
 
 public partial struct ExplosionDespawnSystem : ISystem
 {
@@ -20,7 +20,7 @@ public partial struct ExplosionDespawnSystem : ISystem
         state.Dependency = new ManageExplosions
         {
             ECB = ecb,
-            Elapsed = elapsed,
+            Elapsed = elapsed
         }.Schedule(state.Dependency);
     }
 }
@@ -35,9 +35,6 @@ public partial struct ManageExplosions : IJobEntity
     {
         // This number must match the duration of the explosion particle system
         var duration = 1f;
-        if (Elapsed >= explosion.Startpoint + duration)
-        {
-            ECB.DestroyEntity(entity);
-        }
+        if (Elapsed >= explosion.Startpoint + duration) ECB.DestroyEntity(entity);
     }
 }

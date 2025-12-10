@@ -1,17 +1,14 @@
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Physics.Systems;
 using Unity.Transforms;
-using UnityEngine;
-using Random = System.Random;
 
 [RequireMatchingQueriesForUpdate]
 [UpdateInGroup(typeof(FixedStepSimulationSystemGroup))]
 [UpdateAfter(typeof(PhysicsSystemGroup))]
-partial struct PlaneCollisionSystem : ISystem
+internal partial struct PlaneCollisionSystem : ISystem
 {
     private ComponentLookup<PlaneStabilizerComponent> _planeStabilizerLookup;
     private ComponentLookup<LocalTransform> _localTransformLookup;
@@ -24,7 +21,7 @@ partial struct PlaneCollisionSystem : ISystem
         state.RequireForUpdate<ConfigComponent>();
         state.RequireForUpdate(state.GetEntityQuery(ComponentType.ReadWrite<PlaneStabilizerComponent>()));
 
-        _planeStabilizerLookup = state.GetComponentLookup<PlaneStabilizerComponent>(false);
+        _planeStabilizerLookup = state.GetComponentLookup<PlaneStabilizerComponent>();
         _localTransformLookup = state.GetComponentLookup<LocalTransform>(true);
     }
 
@@ -60,7 +57,7 @@ partial struct PlaneCollisionSystem : ISystem
 
     [BurstCompile]
     [WithAll(typeof(AlertComponent))]
-    struct PlaneCollisionJob : ICollisionEventsJob
+    private struct PlaneCollisionJob : ICollisionEventsJob
     {
         public EntityCommandBuffer ECB;
         public float Elapsed;
@@ -78,7 +75,7 @@ partial struct PlaneCollisionSystem : ISystem
 
             if (!isBodyAPlane || !isBodyBPlane)
                 return;
-            
+
             var planeStabilizerEntityA = PlaneStabilizerLookup.GetRefRW(entityA);
             var planeStabilizerEntityB = PlaneStabilizerLookup.GetRefRW(entityB);
 

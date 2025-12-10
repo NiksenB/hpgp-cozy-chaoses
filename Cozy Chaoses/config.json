@@ -3,7 +3,7 @@
     "planetRadius": 100.0,
     "planeSpeed": 8.0,
     "planeRotationSpeed": 6.0,
-    "planeDamping": 7.0,
+    "planeDamping": 10.0,
     "planeMaxAngularSpeed": 6.0,
     "planeResponseSpeed": 8.0,
     "planeForwardWeight": 1.0,

@@ -1,5 +1,5 @@
-using Unity.Entities;
 using Unity.Burst;
+using Unity.Entities;
 
 public partial struct DespawnSystem : ISystem
 {
@@ -15,10 +15,10 @@ public partial struct DespawnSystem : ISystem
     {
         var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
             .CreateCommandBuffer(state.WorldUnmanaged);
-        
+
         state.Dependency = new DespawnJob
         {
-            ECB = ecb,
+            ECB = ecb
         }.Schedule(state.Dependency);
     }
 }
@@ -28,6 +28,7 @@ public partial struct DespawnSystem : ISystem
 public partial struct DespawnJob : IJobEntity
 {
     public EntityCommandBuffer ECB;
+
     public void Execute(Entity entity)
     {
         ECB.DestroyEntity(entity);

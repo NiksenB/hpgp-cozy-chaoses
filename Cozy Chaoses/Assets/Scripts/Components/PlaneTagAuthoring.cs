@@ -14,7 +14,7 @@ namespace Components
             }
         }
     }
-    
+
     public struct PlaneTag : IComponentData
     {
     }

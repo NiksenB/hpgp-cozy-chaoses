@@ -1,8 +1,8 @@
-using UnityEngine;
 using Unity.Mathematics;
+using UnityEngine;
 using Random = Unity.Mathematics.Random;
 
-public class Utils
+public static class Utils
 {
     // From Tank Tutorial:
     // Return a random color that is visually distinct.
