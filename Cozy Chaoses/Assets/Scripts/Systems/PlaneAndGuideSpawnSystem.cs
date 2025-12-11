@@ -16,7 +16,6 @@ public partial struct PlaneAndGuideSpawnSystem : ISystem
     {
         state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>();
         state.RequireForUpdate<ConfigComponent>();
-        state.RequireForUpdate<PlanetComponent>();
         state.RequireForUpdate<AirportComponent>();
     }
 
@@ -35,8 +34,6 @@ public partial struct PlaneAndGuideSpawnSystem : ISystem
 
             _airports = query.ToComponentDataArray<LocalTransform>(Allocator.Persistent);
         }
-
-        var planet = SystemAPI.GetSingleton<PlanetComponent>();
 
         var elapsedTime = SystemAPI.Time.ElapsedTime;
 
