@@ -9,34 +9,6 @@ namespace Components
         public float3 endPoint;
         public float targetHeight;
 
-        private void OnDrawGizmos()
-        {
-            Gizmos.color = Color.cyan;
-            var start = transform.position;
-            Vector3 end = endPoint;
-            // float height = targetHeight;
-
-            // GuidePathComponent pathComponent = GetPathComponent(this);
-
-            // int segments = 50;
-            // Vector3 prevPos = start;
-            //
-            // for (int i = 1; i <= segments; i++)
-            // {
-            //     float t = (float)i / segments;
-            //     Vector3 currentPos = LineCalculator.Calculate(pathComponent, t);
-            //
-            //     Gizmos.DrawLine(prevPos, currentPos);
-            //     prevPos = currentPos;
-            // }
-
-            // Anchor points
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawSphere(start, 0.5f);
-            Gizmos.DrawWireSphere(end, 0.5f);
-            Gizmos.color = Color.red;
-        }
-
         private static GuidePathComponent GetPathComponent(GuidePathAuthoring authoring)
         {
             return new GuidePathComponent

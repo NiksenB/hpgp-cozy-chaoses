@@ -3,11 +3,10 @@ using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;
 
-// Required for Debug.DrawLine
-
 namespace Systems
 {
 #if UNITY_EDITOR
+    // Required for Debug.DrawLine
     [UpdateInGroup(typeof(PresentationSystemGroup))]
     public partial struct GuidePathDebugSystem : ISystem
     {
@@ -88,7 +87,6 @@ namespace Systems
                 for (var i = 1; i <= segments; i++)
                 {
                     var newTransform = LocalTransform.FromPositionRotation(prevPos, prevRotation);
-                    // float t = (float)i / segments;
                     var result = NavigationCalculator.CalculateNext(newTransform, guidePath, Config.PlaneSpeed,
                         Planet.Radius, DeltaTime);
 
