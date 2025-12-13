@@ -42,6 +42,10 @@ public struct PrefabConfigComponent : IComponentData
 public struct ConfigComponent : IComponentData
 {
     public ExecutionMode ExecutionMode;
+    public bool EnableDebugMode;
+    public bool EnableDespawnOnCollision;
+    public double NextPlaneSpawnTimeLower;
+    public double NextPlaneSpawnTimeUpper;
 
     public Entity PlanePrefab;
     public float PlaneSpeed; // How fast planes move

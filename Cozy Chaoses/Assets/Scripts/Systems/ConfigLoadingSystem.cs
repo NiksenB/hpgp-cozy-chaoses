@@ -30,6 +30,10 @@ namespace Systems
             state.EntityManager.AddComponentData(entity, new ConfigComponent
             {
                 ExecutionMode = configData.executionMode,
+                EnableDebugMode = configData.enableDebugMode,
+                EnableDespawnOnCollision = configData.enableDespawnOnCollision,
+                NextPlaneSpawnTimeLower = configData.nextPlaneSpawnTimeLower,
+                NextPlaneSpawnTimeUpper = configData.nextPlaneSpawnTimeUpper,
 
                 PlanePrefab = prefabConfig.PlanePrefab,
                 PlaneRotationSpeed = configData.planeRotationSpeed,
@@ -81,6 +85,10 @@ namespace Systems
             return new ConfigFileData
             {
                 executionMode = ExecutionMode.Schedule,
+                enableDebugMode = false,
+                enableDespawnOnCollision = true,
+                nextPlaneSpawnTimeLower = 10.0,
+                nextPlaneSpawnTimeUpper = 100.0,
                 airportCount = 25,
                 planetRadius = 100f,
                 planeSpeed = 5f,
@@ -97,6 +105,11 @@ namespace Systems
     internal struct ConfigFileData
     {
         public ExecutionMode executionMode;
+        public bool enableDebugMode;
+        public bool enableDespawnOnCollision;
+        public double nextPlaneSpawnTimeLower;
+        public double nextPlaneSpawnTimeUpper;
+        
         public int airportCount;
         public float planetRadius;
         public float planeSpeed;

@@ -37,7 +37,10 @@ namespace Systems
                         var currentRotation = math.normalizesafe(transform.ValueRO.Rotation);
                         var targetRotation = math.normalizesafe(targetTransform.Rotation);
 
-                        StabilizePlaneJob.DrawDebug(transform.ValueRO, currentRotation);
+                        if (config.EnableDebugMode)
+                        {
+                            StabilizePlaneJob.DrawDebug(transform.ValueRO, currentRotation);
+                        }
 
                         var currentForward = math.mul(currentRotation, new float3(0, 0, 1));
                         var currentUp = math.mul(currentRotation, new float3(0, 1, 0));
@@ -131,7 +134,7 @@ namespace Systems
     }
 }
 
-// [BurstCompile]
+[BurstCompile]
 public partial struct StabilizePlaneJob : IJobEntity
 {
     [ReadOnly] public ComponentLookup<LocalTransform> TransformLookup;
@@ -148,7 +151,10 @@ public partial struct StabilizePlaneJob : IJobEntity
         var currentRotation = math.normalizesafe(transform.Rotation);
         var targetRotation = math.normalizesafe(targetTransform.Rotation);
 
-        DrawDebug(transform, currentRotation);
+        if (Config.EnableDebugMode)
+        {
+            DrawDebug(transform, currentRotation);
+        }
 
         // Get actual direction vectors in world space
         var currentForward = math.mul(currentRotation, new float3(0, 0, 1));

@@ -44,6 +44,7 @@ internal partial struct PlaneCollisionSystem : ISystem
         {
             ECB = ecb,
             Elapsed = elapsed,
+            EnableCollisions = config.EnableDespawnOnCollision,
             Explosion = config.ExplosionPrefab,
             PlaneStabilizerLookup = _planeStabilizerLookup,
             LocalTransformLookup = _localTransformLookup
@@ -62,6 +63,7 @@ internal partial struct PlaneCollisionSystem : ISystem
         public EntityCommandBuffer ECB;
         public float Elapsed;
         public Entity Explosion;
+        public bool EnableCollisions;
         public ComponentLookup<PlaneStabilizerComponent> PlaneStabilizerLookup;
         [ReadOnly] public ComponentLookup<LocalTransform> LocalTransformLookup;
 
@@ -80,6 +82,9 @@ internal partial struct PlaneCollisionSystem : ISystem
             var planeStabilizerEntityB = PlaneStabilizerLookup.GetRefRW(entityB);
 
             // Despawn planes
+            if (!EnableCollisions)
+                return;
+
             ECB.AddComponent(planeStabilizerEntityA.ValueRW.GuideEntity, new ShouldDespawnTag());
             ECB.AddComponent(planeStabilizerEntityB.ValueRW.GuideEntity, new ShouldDespawnTag());
 

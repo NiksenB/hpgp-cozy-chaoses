@@ -19,8 +19,14 @@ namespace Systems
 
         public void OnUpdate(ref SystemState state)
         {
-            var planet = SystemAPI.GetSingleton<PlanetComponent>();
             var config = SystemAPI.GetSingleton<ConfigComponent>();
+            if (!config.EnableDebugMode)
+            {
+                state.Enabled = false;
+                return;
+            }
+            
+            var planet = SystemAPI.GetSingleton<PlanetComponent>();
             var dt = SystemAPI.Time.fixedDeltaTime;
 
             switch (config.ExecutionMode)

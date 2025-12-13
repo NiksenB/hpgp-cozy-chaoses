@@ -154,6 +154,7 @@ public partial struct GuideMovementSystem : ISystem
                     PlaneSpeed = config.PlaneSpeed,
                     Planet = planet
                 }.ScheduleParallel(state.Dependency);
+                alertMovesParallel.Complete();
 
                 state.Dependency = new MoveGuidesTowardsEnpointJobParallel
                 {
