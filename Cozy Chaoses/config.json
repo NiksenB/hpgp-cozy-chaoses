@@ -1,10 +1,10 @@
 {
-  "executionMode": 2,
+  "executionMode": 0,
+  "maxPlaneCount": 1000,
   "enableDebugMode": false,
   "enableDespawnOnCollision": false,
   "nextPlaneSpawnTimeLower": 2.0,
   "nextPlaneSpawnTimeUpper": 2.0,
-  "maxPlaneCount": 10000,
   "airportCount": 250,
   "planetRadius": 1000.0,
   "planeSpeed": 5.0,
