@@ -46,6 +46,9 @@ public struct ConfigComponent : IComponentData
     public bool EnableDespawnOnCollision;
     public double NextPlaneSpawnTimeLower;
     public double NextPlaneSpawnTimeUpper;
+    public int MaxPlaneCount;
+    // Internal count
+    public int CurrentPlaneCount;
 
     public Entity PlanePrefab;
     public float PlaneSpeed; // How fast planes move

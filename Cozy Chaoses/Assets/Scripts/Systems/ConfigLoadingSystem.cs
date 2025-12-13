@@ -34,6 +34,8 @@ namespace Systems
                 EnableDespawnOnCollision = configData.enableDespawnOnCollision,
                 NextPlaneSpawnTimeLower = configData.nextPlaneSpawnTimeLower,
                 NextPlaneSpawnTimeUpper = configData.nextPlaneSpawnTimeUpper,
+                MaxPlaneCount = configData.maxPlaneCount,
+                CurrentPlaneCount = 0,
 
                 PlanePrefab = prefabConfig.PlanePrefab,
                 PlaneRotationSpeed = configData.planeRotationSpeed,
@@ -89,6 +91,7 @@ namespace Systems
                 enableDespawnOnCollision = true,
                 nextPlaneSpawnTimeLower = 10.0,
                 nextPlaneSpawnTimeUpper = 100.0,
+                maxPlaneCount = 1000,
                 airportCount = 25,
                 planetRadius = 100f,
                 planeSpeed = 5f,
@@ -109,6 +112,7 @@ namespace Systems
         public bool enableDespawnOnCollision;
         public double nextPlaneSpawnTimeLower;
         public double nextPlaneSpawnTimeUpper;
+        public int maxPlaneCount;
         
         public int airportCount;
         public float planetRadius;

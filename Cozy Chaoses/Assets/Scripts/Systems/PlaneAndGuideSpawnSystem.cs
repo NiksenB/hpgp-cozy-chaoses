@@ -10,6 +10,7 @@ public partial struct PlaneAndGuideSpawnSystem : ISystem
 {
     private float _timer;
     private NativeArray<LocalTransform> _airports;
+    private NativeReference<int> _planesSpawned;
 
     [BurstCompile]
     public void OnCreate(ref SystemState state)
@@ -17,6 +18,7 @@ public partial struct PlaneAndGuideSpawnSystem : ISystem
         state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>();
         state.RequireForUpdate<ConfigComponent>();
         state.RequireForUpdate<AirportComponent>();
+        _planesSpawned = new NativeReference<int>(Allocator.Persistent);
     }
 
     [BurstCompile]
@@ -25,7 +27,8 @@ public partial struct PlaneAndGuideSpawnSystem : ISystem
         var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
             .CreateCommandBuffer(state.WorldUnmanaged);
 
-        var config = SystemAPI.GetSingleton<ConfigComponent>();
+        var configRW = SystemAPI.GetSingletonRW<ConfigComponent>();
+        var config = configRW.ValueRO;
 
         if (!_airports.IsCreated || _airports.Length == 0)
         {
@@ -44,6 +47,8 @@ public partial struct PlaneAndGuideSpawnSystem : ISystem
                              .WithAll<AirportComponent, LocalTransform>())
                 {
                     if (elapsedTime < airportComponent.ValueRO.NextPlaneSpawnTime) continue;
+                    if (configRW.ValueRO.CurrentPlaneCount >= config.MaxPlaneCount) continue;
+                    configRW.ValueRW.CurrentPlaneCount++;
 
                     var random = new Random((uint)elapsedTime + 100);
                     airportComponent.ValueRW.NextPlaneSpawnTime += random.NextDouble(config.NextPlaneSpawnTimeLower, config.NextPlaneSpawnTimeUpper);
@@ -85,23 +90,31 @@ public partial struct PlaneAndGuideSpawnSystem : ISystem
                 break;
 
             case ExecutionMode.Schedule:
+                _planesSpawned.Value = 0;
                 state.Dependency = new SpawnPlanesSingle
                 {
                     ECB = ecb,
                     Config = config,
                     ElapsedTime = elapsedTime,
-                    Airports = _airports
+                    Airports = _airports,
+                    PlanesSpawned = _planesSpawned
                 }.Schedule(state.Dependency);
+                state.Dependency.Complete();
+                configRW.ValueRW.CurrentPlaneCount += _planesSpawned.Value;
                 break;
 
             case ExecutionMode.ScheduleParallel:
+                _planesSpawned.Value = 0;
                 state.Dependency = new SpawnPlanesParallel
                 {
                     ECB = ecb.AsParallelWriter(),
                     Config = config,
                     ElapsedTime = elapsedTime,
-                    Airports = _airports
+                    Airports = _airports,
+                    PlanesSpawned = _planesSpawned
                 }.ScheduleParallel(state.Dependency);
+                state.Dependency.Complete();
+                configRW.ValueRW.CurrentPlaneCount += _planesSpawned.Value;
                 break;
         }
     }
@@ -109,7 +122,10 @@ public partial struct PlaneAndGuideSpawnSystem : ISystem
     [BurstCompile]
     public void OnDestroy(ref SystemState state)
     {
-        _airports.Dispose();
+        if (_airports.IsCreated)
+            _airports.Dispose();
+        if (_planesSpawned.IsCreated)
+            _planesSpawned.Dispose();
     }
 }
 
@@ -121,10 +137,13 @@ public partial struct SpawnPlanesSingle : IJobEntity
     public ConfigComponent Config;
     public double ElapsedTime;
     [ReadOnly] public NativeArray<LocalTransform> Airports;
+    public NativeReference<int> PlanesSpawned;
 
     private void Execute(ref AirportComponent sourceComponent, in LocalTransform sourceTransform)
     {
         if (ElapsedTime < sourceComponent.NextPlaneSpawnTime) return;
+        if (Config.CurrentPlaneCount + PlanesSpawned.Value >= Config.MaxPlaneCount) return;
+        PlanesSpawned.Value++;
 
         var random = new Random((uint)ElapsedTime + 100);
         sourceComponent.NextPlaneSpawnTime += random.NextDouble(Config.NextPlaneSpawnTimeLower, Config.NextPlaneSpawnTimeUpper);
@@ -173,10 +192,13 @@ public partial struct SpawnPlanesParallel : IJobEntity
     public ConfigComponent Config;
     public double ElapsedTime;
     [ReadOnly] public NativeArray<LocalTransform> Airports;
+    [NativeDisableParallelForRestriction] public NativeReference<int> PlanesSpawned;
 
     private void Execute([ChunkIndexInQuery] int chunkIndex, ref AirportComponent sourceComponent, in LocalTransform sourceTransform)
     {
         if (ElapsedTime < sourceComponent.NextPlaneSpawnTime) return;
+        if (Config.CurrentPlaneCount + PlanesSpawned.Value >= Config.MaxPlaneCount) return;
+        PlanesSpawned.Value++;
 
         var random = new Random((uint)ElapsedTime + 100);
         sourceComponent.NextPlaneSpawnTime += random.NextDouble(Config.NextPlaneSpawnTimeLower, Config.NextPlaneSpawnTimeUpper);
