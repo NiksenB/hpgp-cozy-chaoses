@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Systems
 {
-#if UNITY_EDITOR
+    #if UNITY_EDITOR
     // Required for Debug.DrawLine
     [UpdateInGroup(typeof(PresentationSystemGroup))]
     public partial struct GuidePathDebugSystem : ISystem
@@ -108,5 +108,6 @@ namespace Systems
             }
         }
     }
+    #endif
 }
-#endif
+
