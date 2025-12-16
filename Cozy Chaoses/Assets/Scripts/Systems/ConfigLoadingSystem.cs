@@ -61,8 +61,7 @@ namespace Systems
         private ConfigFileData GetConfig()
         {
             // Get the location of the application executable
-            var currDir = Environment.CurrentDirectory;
-            var configFilePath = Path.Combine(currDir, "config.json");
+            var configFilePath = Path.Combine(Application.streamingAssetsPath, "config.json");
 
             ConfigFileData configData;
 

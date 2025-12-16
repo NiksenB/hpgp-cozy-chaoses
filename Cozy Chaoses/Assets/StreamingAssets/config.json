@@ -6,7 +6,7 @@
   "enableExplosionsOnCollision": false,
   "nextPlaneSpawnTimeLower": 4.0,
   "nextPlaneSpawnTimeUpper": 4.0,
-  "airportCount": 250,
+  "airportCount": 500,
   "planetRadius": 1000.0,
   "planeSpeed": 5.0,
   "planeRotationSpeed": 6.0,
