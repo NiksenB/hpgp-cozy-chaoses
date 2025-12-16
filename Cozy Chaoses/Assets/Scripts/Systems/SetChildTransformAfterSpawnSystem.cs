@@ -5,6 +5,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Transforms;
+using UnityEngine;
 
 namespace Systems
 {
@@ -21,102 +22,41 @@ namespace Systems
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            // Based on: https://discussions.unity.com/t/what-is-the-proper-way-of-instantiating-an-entity-prefab-with-child-physics-bodies/910049/22
-            var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
-                .CreateCommandBuffer(state.WorldUnmanaged);
-            var transformLookup = SystemAPI.GetComponentLookup<LocalTransform>(true);
-            var config = SystemAPI.GetSingleton<ConfigComponent>();
-
-            switch (config.ExecutionMode)
+            var ecb = new EntityCommandBuffer(Allocator.Temp);
+            
+            foreach (var (setup, entity) in SystemAPI.Query<RefRO<JustSpawnedMustBeMoved>>().WithEntityAccess())
             {
-                case ExecutionMode.Main:
-                    foreach (var (planeStabilizerComponent, velocity, entity) in SystemAPI.Query<RefRO<PlaneStabilizerComponent>, RefRW<PhysicsVelocity>>()
-                                 .WithAll<JustSpawnedTag>()
-                                 .WithEntityAccess())
+                if (SystemAPI.HasComponent<LocalTransform>(entity))
+                {
+                    ecb.SetComponent(entity, LocalTransform.FromPositionRotation(setup.ValueRO.Position, setup.ValueRO.Rotation));
+                }
+
+                if (SystemAPI.HasBuffer<LinkedEntityGroup>(entity))
+                {
+                    var linkedGroup = SystemAPI.GetBuffer<LinkedEntityGroup>(entity);
+
+                    foreach (var linkedEntity in linkedGroup)
                     {
-                        var planeTransform = transformLookup[entity];
-                        var guideTransform = transformLookup[planeStabilizerComponent.ValueRO.GuideEntity];
+                        var childEntity = linkedEntity.Value;
 
-                        planeTransform.Position = guideTransform.Position;
-                        planeTransform.Rotation = guideTransform.Rotation;
+                        if (SystemAPI.HasComponent<PhysicsVelocity>(childEntity))
+                        {
+                            ecb.SetComponent(childEntity, PhysicsVelocity.Zero);
+                        }
 
-                        ecb.SetComponent(entity, planeTransform);
-
-                        var newVelocity = velocity.ValueRO;
-                        newVelocity.Angular = float3.zero;
-                        newVelocity.Linear = float3.zero;
-                        velocity.ValueRW = newVelocity;
-
-                        ecb.RemoveComponent<JustSpawnedTag>(entity);
+                        if (!SystemAPI.HasComponent<Parent>(childEntity) && SystemAPI.HasComponent<JustSpawnedTag>(childEntity) && childEntity != entity)
+                        {
+                            ecb.SetComponent(childEntity, LocalTransform.FromPositionRotation(setup.ValueRO.Position, setup.ValueRO.Rotation));
+                            ecb.RemoveComponent<JustSpawnedTag>(childEntity);
+                        }
                     }
-                    break;
+                }
 
-                case ExecutionMode.Schedule:
-                    state.Dependency = new SetInitialPlaneTransformJobSingle
-                    {
-                        ECB = ecb,
-                        TransformLookup = transformLookup
-                    }.Schedule(state.Dependency);
-                    break;
-
-                case ExecutionMode.ScheduleParallel:
-                    state.Dependency = new SetInitialPlaneTransformJobParallel
-                    {
-                        ECB = ecb.AsParallelWriter(),
-                        TransformLookup = transformLookup
-                    }.ScheduleParallel(state.Dependency);
-                    break;
+                ecb.RemoveComponent<JustSpawnedMustBeMoved>(entity);
             }
-        }
-    }
 
-    [BurstCompile]
-    [WithAll(typeof(JustSpawnedTag))]
-    public partial struct SetInitialPlaneTransformJobSingle : IJobEntity
-    {
-        [ReadOnly] public ComponentLookup<LocalTransform> TransformLookup;
-        public EntityCommandBuffer ECB;
-
-        public void Execute(Entity entity, in PlaneStabilizerComponent planeStabilizerComponent,
-            ref PhysicsVelocity velocity)
-        {
-            var planeTransform = TransformLookup[entity];
-            var guideTransform = TransformLookup[planeStabilizerComponent.GuideEntity];
-
-            planeTransform.Position = guideTransform.Position;
-            planeTransform.Rotation = guideTransform.Rotation;
-
-            ECB.SetComponent(entity, planeTransform);
-
-            velocity.Angular = float3.zero;
-            velocity.Linear = float3.zero;
-
-            ECB.RemoveComponent<JustSpawnedTag>(entity);
-        }
-    }
-
-    [BurstCompile]
-    [WithAll(typeof(JustSpawnedTag))]
-    public partial struct SetInitialPlaneTransformJobParallel : IJobEntity
-    {
-        [ReadOnly] public ComponentLookup<LocalTransform> TransformLookup;
-        public EntityCommandBuffer.ParallelWriter ECB;
-
-        public void Execute([ChunkIndexInQuery] int chunkIndex, Entity entity, in PlaneStabilizerComponent planeStabilizerComponent,
-            ref PhysicsVelocity velocity)
-        {
-            var planeTransform = TransformLookup[entity];
-            var guideTransform = TransformLookup[planeStabilizerComponent.GuideEntity];
-
-            planeTransform.Position = guideTransform.Position;
-            planeTransform.Rotation = guideTransform.Rotation;
-
-            ECB.SetComponent(chunkIndex, entity, planeTransform);
-
-            velocity.Angular = float3.zero;
-            velocity.Linear = float3.zero;
-
-            ECB.RemoveComponent<JustSpawnedTag>(chunkIndex, entity);
+            ecb.Playback(state.EntityManager);
+            ecb.Dispose();
         }
     }
 }

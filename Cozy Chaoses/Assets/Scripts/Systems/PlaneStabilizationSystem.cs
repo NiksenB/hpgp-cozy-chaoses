@@ -1,3 +1,4 @@
+using Components;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -28,7 +29,7 @@ namespace Systems
             switch (config.ExecutionMode)
             {
                 case ExecutionMode.Main:
-                    foreach (var (velocity, transform, planeStabilizerComponent) in SystemAPI.Query<RefRW<PhysicsVelocity>, RefRO<LocalTransform>, RefRO<PlaneStabilizerComponent>>())
+                    foreach (var (velocity, transform, planeStabilizerComponent) in SystemAPI.Query<RefRW<PhysicsVelocity>, RefRO<LocalTransform>, RefRO<PlaneStabilizerComponent>>().WithNone<JustSpawnedTag>())
                     {
                         if (!transformLookup.HasComponent(planeStabilizerComponent.ValueRO.GuideEntity)) continue;
 
@@ -135,6 +136,7 @@ namespace Systems
 }
 
 [BurstCompile]
+[WithNone(typeof(JustSpawnedTag))]
 public partial struct StabilizePlaneJob : IJobEntity
 {
     [ReadOnly] public ComponentLookup<LocalTransform> TransformLookup;

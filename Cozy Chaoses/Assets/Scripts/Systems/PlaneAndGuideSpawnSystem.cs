@@ -1,4 +1,5 @@
 using System.Threading;
+using Components;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -182,7 +183,7 @@ public partial struct SpawnPlanesSingle : IJobEntity
         var spawnRotation = quaternion.LookRotation(forward, up);
 
         ECB.AddComponent(planeAndGuideEntity,
-            LocalTransform.FromPositionRotation(spawnPosition, spawnRotation));
+            new JustSpawnedMustBeMoved { Position = spawnPosition, Rotation = spawnRotation });
         ECB.AddComponent(planeAndGuideEntity, new GuidePathComponent
         {
             EndPoint = dest,

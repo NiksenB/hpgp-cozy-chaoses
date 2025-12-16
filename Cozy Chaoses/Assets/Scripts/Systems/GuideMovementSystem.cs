@@ -1,3 +1,4 @@
+using Components;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -107,6 +108,7 @@ public partial struct GuideMovementSystem : ISystem
                              .Query<RefRW<LocalTransform>, RefRW<GuidePathComponent>>()
                              .WithNone<AlertComponent>()
                              .WithNone<ShouldDespawnTag>()
+                             .WithNone<JustSpawnedMustBeMoved>()
                              .WithEntityAccess())
                 {
                     if (math.distance(transform.ValueRO.Position, guidePath.ValueRO.EndPoint) <= 1f)
@@ -172,6 +174,7 @@ public partial struct GuideMovementSystem : ISystem
 [BurstCompile]
 [WithNone(typeof(AlertComponent))]
 [WithNone(typeof(ShouldDespawnTag))]
+[WithNone(typeof(JustSpawnedMustBeMoved))]
 public partial struct MoveGuidesTowardsEnpointJobSingle : IJobEntity
 {
     public EntityCommandBuffer ECB;
@@ -198,6 +201,7 @@ public partial struct MoveGuidesTowardsEnpointJobSingle : IJobEntity
 [BurstCompile]
 [WithAll(typeof(AlertComponent))]
 [WithNone(typeof(ShouldDespawnTag))]
+[WithNone(typeof(JustSpawnedMustBeMoved))]
 public partial struct MoveGuidesAvoidCollisionJobSingle : IJobEntity
 {
     public EntityCommandBuffer ECB;
