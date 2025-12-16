@@ -68,6 +68,7 @@ namespace Systems
             if (File.Exists(configFilePath))
             {
                 var jsonString = File.ReadAllText(configFilePath);
+                Debug.Log("Config file found at " + configFilePath + ". Loading config. from string: " + jsonString);
                 configData = JsonUtility.FromJson<ConfigFileData>(jsonString);
             }
             else
