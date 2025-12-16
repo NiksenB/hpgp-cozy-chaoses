@@ -45,7 +45,12 @@ public class DebugTextUpdate : MonoBehaviour
     {
         EntityManager entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
         EntityQuery query = entityManager.CreateEntityQuery(new ComponentType[] { typeof(ConfigComponent) });
-        var config = query.GetSingleton<ConfigComponent>();
+        ConfigComponent config;
+        var succeeded = query.TryGetSingleton<ConfigComponent>(out config);
+        if (!succeeded)
+        {
+            return "ENTITIES:\nN/A";
+        }
 
         return $"ENTITIES:\n{config.CurrentPlaneCount:##,###}/{config.MaxPlaneCount:##,###}";
     }
