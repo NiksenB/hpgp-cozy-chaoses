@@ -45,6 +45,7 @@ internal partial struct PlaneCollisionSystem : ISystem
             ECB = ecb,
             Elapsed = elapsed,
             EnableCollisions = config.EnableDespawnOnCollision,
+            EnableExplosions = config.EnableExplosionsOnCollision,
             Explosion = config.ExplosionPrefab,
             PlaneStabilizerLookup = _planeStabilizerLookup,
             LocalTransformLookup = _localTransformLookup
@@ -64,6 +65,7 @@ internal partial struct PlaneCollisionSystem : ISystem
         public float Elapsed;
         public Entity Explosion;
         public bool EnableCollisions;
+        public bool EnableExplosions;
         public ComponentLookup<PlaneStabilizerComponent> PlaneStabilizerLookup;
         [ReadOnly] public ComponentLookup<LocalTransform> LocalTransformLookup;
 
@@ -82,21 +84,24 @@ internal partial struct PlaneCollisionSystem : ISystem
             var planeStabilizerEntityB = PlaneStabilizerLookup.GetRefRW(entityB);
 
             // Despawn planes
-            if (!EnableCollisions)
-                return;
+            if (EnableCollisions)
+            {
+                ECB.AddComponent(planeStabilizerEntityA.ValueRW.GuideEntity, new ShouldDespawnTag());
+                ECB.AddComponent(planeStabilizerEntityB.ValueRW.GuideEntity, new ShouldDespawnTag());
+            }
 
-            ECB.AddComponent(planeStabilizerEntityA.ValueRW.GuideEntity, new ShouldDespawnTag());
-            ECB.AddComponent(planeStabilizerEntityB.ValueRW.GuideEntity, new ShouldDespawnTag());
+            if (EnableExplosions)
+            {
+                // Spawn explosion
+                var posA = LocalTransformLookup[entityA].Position;
+                var posB = LocalTransformLookup[entityB].Position;
+                var collisionPoint = (posA + posB) * 0.5f;
 
-            // Spawn explosion
-            var posA = LocalTransformLookup[entityA].Position;
-            var posB = LocalTransformLookup[entityB].Position;
-            var collisionPoint = (posA + posB) * 0.5f;
-
-            var explosionEntity = ECB.Instantiate(Explosion);
-            ECB.AddComponent(explosionEntity, new ExplosionComponent { Startpoint = Elapsed });
-            ECB.SetComponent(explosionEntity,
-                LocalTransform.FromPosition(collisionPoint));
+                var explosionEntity = ECB.Instantiate(Explosion);
+                ECB.AddComponent(explosionEntity, new ExplosionComponent { Startpoint = Elapsed });
+                ECB.SetComponent(explosionEntity,
+                    LocalTransform.FromPosition(collisionPoint));
+            }
         }
     }
 }

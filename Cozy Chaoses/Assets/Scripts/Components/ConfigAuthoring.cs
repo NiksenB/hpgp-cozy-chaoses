@@ -44,6 +44,7 @@ public struct ConfigComponent : IComponentData
     public ExecutionMode ExecutionMode;
     public bool EnableDebugMode;
     public bool EnableDespawnOnCollision;
+    public bool EnableExplosionsOnCollision;
     public double NextPlaneSpawnTimeLower;
     public double NextPlaneSpawnTimeUpper;
     public int MaxPlaneCount;

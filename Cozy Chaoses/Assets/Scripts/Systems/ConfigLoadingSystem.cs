@@ -32,6 +32,7 @@ namespace Systems
                 ExecutionMode = configData.executionMode,
                 EnableDebugMode = configData.enableDebugMode,
                 EnableDespawnOnCollision = configData.enableDespawnOnCollision,
+                EnableExplosionsOnCollision = configData.enableExplosionsOnCollision,
                 NextPlaneSpawnTimeLower = configData.nextPlaneSpawnTimeLower,
                 NextPlaneSpawnTimeUpper = configData.nextPlaneSpawnTimeUpper,
                 MaxPlaneCount = configData.maxPlaneCount,
@@ -89,6 +90,7 @@ namespace Systems
                 executionMode = ExecutionMode.Schedule,
                 enableDebugMode = false,
                 enableDespawnOnCollision = true,
+                enableExplosionsOnCollision = true,
                 nextPlaneSpawnTimeLower = 10.0,
                 nextPlaneSpawnTimeUpper = 100.0,
                 maxPlaneCount = 1000,
@@ -110,6 +112,7 @@ namespace Systems
         public ExecutionMode executionMode;
         public bool enableDebugMode;
         public bool enableDespawnOnCollision;
+        public bool enableExplosionsOnCollision;
         public double nextPlaneSpawnTimeLower;
         public double nextPlaneSpawnTimeUpper;
         public int maxPlaneCount;
