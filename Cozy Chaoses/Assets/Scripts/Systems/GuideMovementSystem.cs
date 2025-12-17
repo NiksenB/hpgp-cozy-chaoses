@@ -32,6 +32,7 @@ public partial struct GuideMovementSystem : ISystem
                              .Query<RefRW<LocalTransform>, RefRW<GuidePathComponent>, RefRW<AlertComponent>>()
                              .WithAll<AlertComponent>()
                              .WithNone<ShouldDespawnTag>()
+                             .WithNone<JustSpawnedMustBeMoved>()
                              .WithEntityAccess())
                 {
                     var speed = config.PlaneSpeed;
@@ -281,6 +282,7 @@ public partial struct MoveGuidesAvoidCollisionJobSingle : IJobEntity
 [BurstCompile]
 [WithNone(typeof(AlertComponent))]
 [WithNone(typeof(ShouldDespawnTag))]
+[WithNone(typeof(JustSpawnedMustBeMoved))]
 public partial struct MoveGuidesTowardsEnpointJobParallel : IJobEntity
 {
     public EntityCommandBuffer.ParallelWriter ECB;
@@ -308,6 +310,7 @@ public partial struct MoveGuidesTowardsEnpointJobParallel : IJobEntity
 [BurstCompile]
 [WithAll(typeof(AlertComponent))]
 [WithNone(typeof(ShouldDespawnTag))]
+[WithNone(typeof(JustSpawnedMustBeMoved))]
 public partial struct MoveGuidesAvoidCollisionJobParallel : IJobEntity
 {
     public EntityCommandBuffer.ParallelWriter ECB;

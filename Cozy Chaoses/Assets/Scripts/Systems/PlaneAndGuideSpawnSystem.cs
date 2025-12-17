@@ -88,6 +88,13 @@ public partial struct PlaneAndGuideSpawnSystem : ISystem
 
                     ecb.AddComponent(planeAndGuideEntity,
                         LocalTransform.FromPositionRotation(spawnPosition, spawnRotation));
+                    
+                    ecb.AddComponent(planeAndGuideEntity, new JustSpawnedMustBeMoved
+                    {
+                        Position = spawnPosition,
+                        Rotation = spawnRotation
+                    });
+                    
                     ecb.AddComponent(planeAndGuideEntity, new GuidePathComponent
                     {
                         EndPoint = dest,
@@ -241,6 +248,10 @@ public partial struct SpawnPlanesParallel : IJobEntity
 
         ECB.AddComponent(chunkIndex, planeAndGuideEntity,
             LocalTransform.FromPositionRotation(spawnPosition, spawnRotation));
+        
+        ECB.AddComponent(chunkIndex, planeAndGuideEntity,
+            new JustSpawnedMustBeMoved { Position = spawnPosition, Rotation = spawnRotation });
+
         ECB.AddComponent(chunkIndex, planeAndGuideEntity, new GuidePathComponent
         {
             EndPoint = dest,
