@@ -6,6 +6,7 @@ using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Transforms;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Systems
 {
@@ -25,6 +26,21 @@ namespace Systems
             var transformLookup = SystemAPI.GetComponentLookup<LocalTransform>(true);
 
             var config = SystemAPI.GetSingleton<ConfigComponent>();
+
+            if (!config.EnablePlaneStabilization)
+            {
+                foreach (var (transform, planeStabilizerComponent) in SystemAPI
+                             .Query<RefRW<LocalTransform>, RefRO<PlaneStabilizerComponent>>()
+                             .WithNone<JustSpawnedTag>())
+                {
+                    var targetTransform = transformLookup[planeStabilizerComponent.ValueRO.GuideEntity];
+                
+                    transform.ValueRW.Rotation = targetTransform.Rotation;
+                    transform.ValueRW.Position = targetTransform.Position;
+                }
+                
+                return;
+            }
 
             switch (config.ExecutionMode)
             {

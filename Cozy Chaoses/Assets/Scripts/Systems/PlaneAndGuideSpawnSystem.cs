@@ -59,7 +59,7 @@ public partial struct PlaneAndGuideSpawnSystem : ISystem
                     var random = new Random((uint)elapsedTime + 100);
                     airportComponent.ValueRW.NextPlaneSpawnTime += random.NextDouble(config.NextPlaneSpawnTimeLower,
                         config.NextPlaneSpawnTimeUpper);
-                    var planeAndGuideEntity = ecb.Instantiate(config.PlanePrefab);
+                    var planeAndGuideEntity = config.EnablePlaneStabilization ? ecb.Instantiate(config.PlanePrefab) : ecb.Instantiate(config.PlaneNoGravityPrefab);
 
                     var di = math.abs(random.NextInt()) % _airports.Length;
 
@@ -163,7 +163,10 @@ public partial struct SpawnPlanesSingle : IJobEntity
         var random = new Random((uint)ElapsedTime + 100);
         sourceComponent.NextPlaneSpawnTime +=
             random.NextDouble(Config.NextPlaneSpawnTimeLower, Config.NextPlaneSpawnTimeUpper);
-        var planeAndGuideEntity = ECB.Instantiate(Config.PlanePrefab);
+
+        var planeAndGuideEntity = Config.EnablePlaneStabilization 
+            ? ECB.Instantiate(Config.PlanePrefab) 
+            : ECB.Instantiate(Config.PlaneNoGravityPrefab);
 
         var di = math.abs(random.NextInt()) % Airports.Length;
 
@@ -220,7 +223,9 @@ public partial struct SpawnPlanesParallel : IJobEntity
         var random = new Random((uint)ElapsedTime + 100);
         sourceComponent.NextPlaneSpawnTime +=
             random.NextDouble(Config.NextPlaneSpawnTimeLower, Config.NextPlaneSpawnTimeUpper);
-        var planeAndGuideEntity = ECB.Instantiate(chunkIndex, Config.PlanePrefab);
+        var planeAndGuideEntity = Config.EnablePlaneStabilization 
+            ? ECB.Instantiate(chunkIndex, Config.PlanePrefab) 
+            : ECB.Instantiate(chunkIndex, Config.PlaneNoGravityPrefab);
 
         var di = math.abs(random.NextInt()) % Airports.Length;
 

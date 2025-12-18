@@ -4,6 +4,7 @@
   "enableDebugMode": false,
   "enableDespawnOnCollision": true,
   "enableExplosionsOnCollision": false,
+  "enablePlaneStabilization": true,
   "nextPlaneSpawnTimeLower": 4.0,
   "nextPlaneSpawnTimeUpper": 4.0,
   "airportCount": 500,

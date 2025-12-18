@@ -33,6 +33,7 @@ namespace Systems
                 EnableDebugMode = configData.enableDebugMode,
                 EnableDespawnOnCollision = configData.enableDespawnOnCollision,
                 EnableExplosionsOnCollision = configData.enableExplosionsOnCollision,
+                EnablePlaneStabilization = configData.enablePlaneStabilization,
                 NextPlaneSpawnTimeLower = configData.nextPlaneSpawnTimeLower,
                 NextPlaneSpawnTimeUpper = configData.nextPlaneSpawnTimeUpper,
                 MaxPlaneCount = configData.maxPlaneCount,
@@ -46,6 +47,8 @@ namespace Systems
                 PlaneResponseSpeed = configData.planeResponseSpeed,
                 PlaneForwardWeight = configData.planeForwardWeight,
                 PlaneUpWeight = configData.planeUpWeight,
+                
+                PlaneNoGravityPrefab = prefabConfig.PlaneNoGravityPrefab,
 
                 AirportPrefab = prefabConfig.AirportPrefab,
                 AirportCount = configData.airportCount,
@@ -91,6 +94,7 @@ namespace Systems
                 enableDebugMode = false,
                 enableDespawnOnCollision = true,
                 enableExplosionsOnCollision = true,
+                enablePlaneStabilization = true,
                 nextPlaneSpawnTimeLower = 10.0,
                 nextPlaneSpawnTimeUpper = 100.0,
                 maxPlaneCount = 1000,
@@ -113,6 +117,7 @@ namespace Systems
         public bool enableDebugMode;
         public bool enableDespawnOnCollision;
         public bool enableExplosionsOnCollision;
+        public bool enablePlaneStabilization;
         public double nextPlaneSpawnTimeLower;
         public double nextPlaneSpawnTimeUpper;
         public int maxPlaneCount;
