@@ -29,6 +29,16 @@ namespace Systems
 
             state.EntityManager.AddComponentData(entity, new ConfigComponent
             {
+                ExecutionMode = configData.executionMode,
+                EnableDebugMode = configData.enableDebugMode,
+                EnableDespawnOnCollision = configData.enableDespawnOnCollision,
+                EnableExplosionsOnCollision = configData.enableExplosionsOnCollision,
+                EnablePlaneStabilization = configData.enablePlaneStabilization,
+                NextPlaneSpawnTimeLower = configData.nextPlaneSpawnTimeLower,
+                NextPlaneSpawnTimeUpper = configData.nextPlaneSpawnTimeUpper,
+                MaxPlaneCount = configData.maxPlaneCount,
+                CurrentPlaneCount = 0,
+
                 PlanePrefab = prefabConfig.PlanePrefab,
                 PlaneRotationSpeed = configData.planeRotationSpeed,
                 PlaneSpeed = configData.planeSpeed,
@@ -37,12 +47,13 @@ namespace Systems
                 PlaneResponseSpeed = configData.planeResponseSpeed,
                 PlaneForwardWeight = configData.planeForwardWeight,
                 PlaneUpWeight = configData.planeUpWeight,
-
+                
                 AirportPrefab = prefabConfig.AirportPrefab,
                 AirportCount = configData.airportCount,
 
                 PlanetPrefab = prefabConfig.PlanetPrefab,
                 PlanetRadius = configData.planetRadius,
+                GravityAcceleration = configData.gravityAcceleration,
 
                 ExplosionPrefab = prefabConfig.ExplosionPrefab
             });
@@ -52,14 +63,14 @@ namespace Systems
         private ConfigFileData GetConfig()
         {
             // Get the location of the application executable
-            var currDir = Environment.CurrentDirectory;
-            var configFilePath = Path.Combine(currDir, "config.json");
+            var configFilePath = Path.Combine(Application.streamingAssetsPath, "config.json");
 
             ConfigFileData configData;
 
             if (File.Exists(configFilePath))
             {
                 var jsonString = File.ReadAllText(configFilePath);
+                Debug.Log("Config file found at " + configFilePath + ". Loading config. from string: " + jsonString);
                 configData = JsonUtility.FromJson<ConfigFileData>(jsonString);
             }
             else
@@ -78,23 +89,39 @@ namespace Systems
         {
             return new ConfigFileData
             {
+                executionMode = ExecutionMode.Schedule,
+                enableDebugMode = false,
+                enableDespawnOnCollision = true,
+                enableExplosionsOnCollision = true,
+                enablePlaneStabilization = true,
+                nextPlaneSpawnTimeLower = 10.0,
+                nextPlaneSpawnTimeUpper = 100.0,
+                maxPlaneCount = 1000,
                 airportCount = 25,
-                planetRadius = 100f,
                 planeSpeed = 5f,
                 planeRotationSpeed = 6f,
                 planeDamping = 7f,
                 planeMaxAngularSpeed = 6f,
                 planeResponseSpeed = 8f,
                 planeForwardWeight = 1.0f,
-                planeUpWeight = 0.5f
+                planeUpWeight = 0.5f,
+                planetRadius = 100f,
+                gravityAcceleration = 9.81f
             };
         }
     }
 
     internal struct ConfigFileData
     {
-        public int airportCount;
-        public float planetRadius;
+        public ExecutionMode executionMode;
+        public bool enableDebugMode;
+        public bool enableDespawnOnCollision;
+        public bool enableExplosionsOnCollision;
+        public bool enablePlaneStabilization;
+        public double nextPlaneSpawnTimeLower;
+        public double nextPlaneSpawnTimeUpper;
+        public int maxPlaneCount;
+        
         public float planeSpeed;
         public float planeRotationSpeed;
         public float planeDamping;
@@ -102,5 +129,10 @@ namespace Systems
         public float planeResponseSpeed;
         public float planeForwardWeight;
         public float planeUpWeight;
+        
+        public int airportCount;
+        
+        public float planetRadius;
+        public float gravityAcceleration;
     }
 }

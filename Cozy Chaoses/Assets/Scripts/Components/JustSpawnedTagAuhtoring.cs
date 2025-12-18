@@ -1,13 +1,14 @@
 using Unity.Entities;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace Components
 {
-    public class JustSpawnedTagAuthoring : MonoBehaviour
+    public class JustSpawnedAuthoring : MonoBehaviour
     {
-        private class JustSpawnedTagAuthoringBaker : Baker<JustSpawnedTagAuthoring>
+        private class JustSpawnedTagAuthoringBaker : Baker<JustSpawnedAuthoring>
         {
-            public override void Bake(JustSpawnedTagAuthoring authoring)
+            public override void Bake(JustSpawnedAuthoring authoring)
             {
                 var entity = GetEntity(authoring, TransformUsageFlags.None);
                 AddComponent(entity, new JustSpawnedTag());
@@ -17,5 +18,11 @@ namespace Components
 
     public struct JustSpawnedTag : IComponentData
     {
+    }
+    
+    public struct JustSpawnedMustBeMoved : IComponentData
+    {
+        public float3 Position;
+        public quaternion Rotation; 
     }
 }

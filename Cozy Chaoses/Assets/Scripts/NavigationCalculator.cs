@@ -16,14 +16,14 @@ public static class NavigationCalculator
         var currentHeight = math.length(transform.Position) - planetRadius;
         var distToEnd = math.length(transform.Position - guidePath.EndPoint);
 
-        var phase = DetermineFlightPhase(currentHeight, guidePath.TargetAltitude, distToEnd);
+        var phase = DetermineFlightPhase(currentHeight, guidePath.TargetAltitude, distToEnd, planetRadius);
 
         return Calculate(transform, guidePath, speed, deltaTime, phase);
     }
 
-    private static FlightPhase DetermineFlightPhase(float currentHeight, float targetHeight, float distToEnd)
+    private static FlightPhase DetermineFlightPhase(float currentHeight, float targetHeight, float distToEnd,  float planetRadius)
     {
-        var descentStartDist = targetHeight * 2.5f;
+        var descentStartDist = targetHeight * 1.5f + (planetRadius * 0.3f);
 
         if (distToEnd <= descentStartDist || currentHeight >= targetHeight * 1.1) return FlightPhase.Descending;
 

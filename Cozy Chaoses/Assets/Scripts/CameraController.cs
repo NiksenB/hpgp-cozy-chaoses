@@ -7,7 +7,7 @@ public class CameraController : MonoBehaviour
     public InputAction cameraRotateModifier;
     public InputAction cameraZoomModifier;
 
-    public float speed = 100f;
+    public float speed = 200f;
 
     private Vector2 _input;
 
@@ -29,8 +29,8 @@ public class CameraController : MonoBehaviour
         }
         else if (rotateMod)
         {
-            var pitch = -_input.y * speed * Time.deltaTime;
-            var yaw = _input.x * speed * Time.deltaTime;
+            var pitch = -_input.y * 0.5f * speed * Time.deltaTime;
+            var yaw = _input.x * 0.5f * speed * Time.deltaTime;
             cameraTransform.Rotate(pitch, yaw, 0f);
         }
         else

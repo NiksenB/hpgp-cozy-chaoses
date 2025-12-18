@@ -5,6 +5,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Transforms;
+using UnityEngine;
 
 namespace Systems
 {
@@ -15,48 +16,47 @@ namespace Systems
         public void OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>();
+            state.RequireForUpdate<ConfigComponent>();
         }
 
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            // Based on: https://discussions.unity.com/t/what-is-the-proper-way-of-instantiating-an-entity-prefab-with-child-physics-bodies/910049/22 
-            var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
-                .CreateCommandBuffer(state.WorldUnmanaged);
-            var transformLookup = SystemAPI.GetComponentLookup<LocalTransform>(true);
-
-            state.Dependency = new SetInitialPlaneTransformJob
+            var ecb = new EntityCommandBuffer(Allocator.Temp);
+            
+            foreach (var (setup, entity) in SystemAPI.Query<RefRO<JustSpawnedMustBeMoved>>().WithEntityAccess())
             {
-                ECB = ecb,
-                TransformLookup = transformLookup
-            }.Schedule(state.Dependency);
-        }
-    }
+                if (SystemAPI.HasComponent<LocalTransform>(entity))
+                {
+                    ecb.SetComponent(entity, LocalTransform.FromPositionRotation(setup.ValueRO.Position, setup.ValueRO.Rotation));
+                }
 
-    [BurstCompile]
-    [WithAll(typeof(JustSpawnedTag))]
-    public partial struct SetInitialPlaneTransformJob : IJobEntity
-    {
-        [ReadOnly] public ComponentLookup<LocalTransform> TransformLookup;
-        public EntityCommandBuffer ECB;
+                if (SystemAPI.HasBuffer<LinkedEntityGroup>(entity))
+                {
+                    var linkedGroup = SystemAPI.GetBuffer<LinkedEntityGroup>(entity);
 
-        // This is hacky and i kinda hate it, but I don't see another way right now
-        [BurstCompile]
-        public void Execute(Entity entity, in PlaneStabilizerComponent planeStabilizerComponent,
-            ref PhysicsVelocity velocity)
-        {
-            var planeTransform = TransformLookup[entity];
-            var guideTransform = TransformLookup[planeStabilizerComponent.GuideEntity];
+                    foreach (var linkedEntity in linkedGroup)
+                    {
+                        var childEntity = linkedEntity.Value;
 
-            planeTransform.Position = guideTransform.Position;
-            planeTransform.Rotation = guideTransform.Rotation;
+                        if (SystemAPI.HasComponent<PhysicsVelocity>(childEntity))
+                        {
+                            ecb.SetComponent(childEntity, PhysicsVelocity.Zero);
+                        }
 
-            ECB.SetComponent(entity, planeTransform);
+                        if (!SystemAPI.HasComponent<Parent>(childEntity) && SystemAPI.HasComponent<JustSpawnedTag>(childEntity) && childEntity != entity)
+                        {
+                            ecb.SetComponent(childEntity, LocalTransform.FromPositionRotation(setup.ValueRO.Position, setup.ValueRO.Rotation));
+                            ecb.RemoveComponent<JustSpawnedTag>(childEntity);
+                        }
+                    }
+                }
 
-            velocity.Angular = float3.zero;
-            velocity.Linear = float3.zero;
+                ecb.RemoveComponent<JustSpawnedMustBeMoved>(entity);
+            }
 
-            ECB.RemoveComponent<JustSpawnedTag>(entity);
+            ecb.Playback(state.EntityManager);
+            ecb.Dispose();
         }
     }
 }

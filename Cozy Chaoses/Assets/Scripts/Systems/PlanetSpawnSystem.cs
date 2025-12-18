@@ -21,15 +21,46 @@ public partial struct PlanetSpawnSystem : ISystem
         var ecb = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>()
             .CreateCommandBuffer(state.WorldUnmanaged);
 
-        state.Dependency = new SpawnPlanet
+        var config = SystemAPI.GetSingleton<ConfigComponent>();
+
+        switch (config.ExecutionMode)
         {
-            ECB = ecb
-        }.Schedule(state.Dependency);
+            case ExecutionMode.Main:
+                foreach (var configComponent in SystemAPI.Query<RefRO<ConfigComponent>>())
+                {
+                    var planetEntity = ecb.Instantiate(configComponent.ValueRO.PlanetPrefab);
+
+                    var sphereCenter = new float3(0, 0, 0);
+                    var sphereRadius = configComponent.ValueRO.PlanetRadius;
+                    var transform = LocalTransform.FromPosition(sphereCenter).ApplyScale(sphereRadius * 2);
+                    ecb.AddComponent(planetEntity, transform);
+                    ecb.AddComponent(planetEntity, new PlanetComponent
+                    {
+                        Radius = sphereRadius,
+                        Center = sphereCenter
+                    });
+                }
+                break;
+
+            case ExecutionMode.Schedule:
+                state.Dependency = new SpawnPlanetSingle
+                {
+                    ECB = ecb
+                }.Schedule(state.Dependency);
+                break;
+
+            case ExecutionMode.ScheduleParallel:
+                state.Dependency = new SpawnPlanetParallel
+                {
+                    ECB = ecb.AsParallelWriter()
+                }.ScheduleParallel(state.Dependency);
+                break;
+        }
     }
 }
 
 [BurstCompile]
-public partial struct SpawnPlanet : IJobEntity
+public partial struct SpawnPlanetSingle : IJobEntity
 {
     public EntityCommandBuffer ECB;
 
@@ -37,12 +68,32 @@ public partial struct SpawnPlanet : IJobEntity
     {
         var planetEntity = ECB.Instantiate(configComponent.PlanetPrefab);
 
-        // TODO: Should probably be configurable
         var sphereCenter = new float3(0, 0, 0);
         var sphereRadius = configComponent.PlanetRadius;
-        var transform = LocalTransform.FromPosition(sphereCenter).ApplyScale(sphereRadius * 2); // Assume unit sphere
+        var transform = LocalTransform.FromPosition(sphereCenter).ApplyScale(sphereRadius * 2);
         ECB.AddComponent(planetEntity, transform);
         ECB.AddComponent(planetEntity, new PlanetComponent
+        {
+            Radius = sphereRadius,
+            Center = sphereCenter
+        });
+    }
+}
+
+[BurstCompile]
+public partial struct SpawnPlanetParallel : IJobEntity
+{
+    public EntityCommandBuffer.ParallelWriter ECB;
+
+    public void Execute([ChunkIndexInQuery] int chunkIndex, in ConfigComponent configComponent)
+    {
+        var planetEntity = ECB.Instantiate(chunkIndex, configComponent.PlanetPrefab);
+
+        var sphereCenter = new float3(0, 0, 0);
+        var sphereRadius = configComponent.PlanetRadius;
+        var transform = LocalTransform.FromPosition(sphereCenter).ApplyScale(sphereRadius * 2);
+        ECB.AddComponent(chunkIndex, planetEntity, transform);
+        ECB.AddComponent(chunkIndex, planetEntity, new PlanetComponent
         {
             Radius = sphereRadius,
             Center = sphereCenter

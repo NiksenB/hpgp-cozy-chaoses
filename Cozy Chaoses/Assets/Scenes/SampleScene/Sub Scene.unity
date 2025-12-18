@@ -148,7 +148,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fb8bdf544309c34e88ab0454c097d31, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConfigAuthoring
-  planePrefab: {fileID: 9146640197352250829, guid: 8d6d61e6a987ac4218ff3b7346d988f7, type: 3}
+  planePrefab: {fileID: 5095565085768307451, guid: 67ff7516deda5644b9c04c5066478a2f, type: 3}
+  planeNoGravityPrefab: {fileID: 5095565085768307451, guid: fe9efcdadda092a42b0d3f5e2cc3076b, type: 3}
   airportPrefab: {fileID: 8140396965256898243, guid: 4245deedd170c9f4188f379b13b13ff4, type: 3}
   planetPrefab: {fileID: 1607644553271017260, guid: 87d15d6908f46084882673c94d58fbb3, type: 3}
   explosionPrefab: {fileID: 5249806162300148110, guid: da0b302429139174494e24a3282b8bdc, type: 3}

@@ -1,6 +1,13 @@
 using Unity.Entities;
 using UnityEngine;
 
+public enum ExecutionMode
+{
+    Main,
+    Schedule,
+    ScheduleParallel
+}
+
 public class ConfigAuthoring : MonoBehaviour
 {
     public GameObject planePrefab;
@@ -34,6 +41,17 @@ public struct PrefabConfigComponent : IComponentData
 
 public struct ConfigComponent : IComponentData
 {
+    public ExecutionMode ExecutionMode;
+    public bool EnableDebugMode;
+    public bool EnableDespawnOnCollision;
+    public bool EnableExplosionsOnCollision;
+    public bool EnablePlaneStabilization;
+    public double NextPlaneSpawnTimeLower;
+    public double NextPlaneSpawnTimeUpper;
+    public int MaxPlaneCount;
+    // Internal count
+    public int CurrentPlaneCount;
+
     public Entity PlanePrefab;
     public float PlaneSpeed; // How fast planes move
     public float PlaneRotationSpeed; // How fast to rotate towards target
@@ -42,12 +60,13 @@ public struct ConfigComponent : IComponentData
     public float PlaneResponseSpeed; // How quickly to correct orientation
     public float PlaneForwardWeight; // Weight for forward alignment
     public float PlaneUpWeight; // Weight for up alignment
-
+    
     public Entity AirportPrefab;
     public int AirportCount;
 
     public Entity PlanetPrefab;
     public float PlanetRadius;
+    public float GravityAcceleration;
 
     public Entity ExplosionPrefab;
 }
