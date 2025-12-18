@@ -182,6 +182,10 @@ PrefabInstance:
       propertyPath: guideObject
       value: 
       objectReference: {fileID: 5095565085768307451}
+    - target: {fileID: 5309120604885827284, guid: 1b3a78db990d9b0428f246245e44e956, type: 3}
+      propertyPath: m_GravityFactor
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

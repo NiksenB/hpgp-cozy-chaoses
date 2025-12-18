@@ -16,4 +16,5 @@
   "planeResponseSpeed": 8.0,
   "planeForwardWeight": 1.0,
   "planeUpWeight": 0.5
+  "gravityAcceleration": 9.81
 }

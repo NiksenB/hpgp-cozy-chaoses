@@ -55,6 +55,7 @@ namespace Systems
 
                 PlanetPrefab = prefabConfig.PlanetPrefab,
                 PlanetRadius = configData.planetRadius,
+                GravityAcceleration = configData.gravityAcceleration,
 
                 ExplosionPrefab = prefabConfig.ExplosionPrefab
             });
@@ -99,14 +100,15 @@ namespace Systems
                 nextPlaneSpawnTimeUpper = 100.0,
                 maxPlaneCount = 1000,
                 airportCount = 25,
-                planetRadius = 100f,
                 planeSpeed = 5f,
                 planeRotationSpeed = 6f,
                 planeDamping = 7f,
                 planeMaxAngularSpeed = 6f,
                 planeResponseSpeed = 8f,
                 planeForwardWeight = 1.0f,
-                planeUpWeight = 0.5f
+                planeUpWeight = 0.5f,
+                planetRadius = 100f,
+                gravityAcceleration = 9.81f
             };
         }
     }
@@ -122,8 +124,6 @@ namespace Systems
         public double nextPlaneSpawnTimeUpper;
         public int maxPlaneCount;
         
-        public int airportCount;
-        public float planetRadius;
         public float planeSpeed;
         public float planeRotationSpeed;
         public float planeDamping;
@@ -131,5 +131,10 @@ namespace Systems
         public float planeResponseSpeed;
         public float planeForwardWeight;
         public float planeUpWeight;
+        
+        public int airportCount;
+        
+        public float planetRadius;
+        public float gravityAcceleration;
     }
 }
