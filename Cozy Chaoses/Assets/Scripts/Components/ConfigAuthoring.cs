@@ -71,6 +71,7 @@ public struct ConfigComponent : IComponentData
 
     public Entity PlanetPrefab;
     public float PlanetRadius;
+    public float GravityAcceleration;
 
     public Entity ExplosionPrefab;
 }
