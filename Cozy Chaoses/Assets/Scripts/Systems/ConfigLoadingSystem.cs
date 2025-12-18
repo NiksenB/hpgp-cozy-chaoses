@@ -48,8 +48,6 @@ namespace Systems
                 PlaneForwardWeight = configData.planeForwardWeight,
                 PlaneUpWeight = configData.planeUpWeight,
                 
-                PlaneNoGravityPrefab = prefabConfig.PlaneNoGravityPrefab,
-
                 AirportPrefab = prefabConfig.AirportPrefab,
                 AirportCount = configData.airportCount,
 

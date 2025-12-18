@@ -1,13 +1,10 @@
-using System.Numerics;
 using Components;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
-using Unity.Physics.Authoring;
 using Unity.Transforms;
-using UnityEngine;
 
 namespace Systems
 {
@@ -24,8 +21,15 @@ namespace Systems
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var deltaTime = SystemAPI.Time.DeltaTime;
             var config = SystemAPI.GetSingleton<ConfigComponent>();
+
+            if (!config.EnablePlaneStabilization)
+            {
+                state.Enabled = false;
+                return;
+            }
+
+            var deltaTime = SystemAPI.Time.DeltaTime;
             var planet = SystemAPI.GetSingleton<PlanetComponent>();
 
             switch (config.ExecutionMode)

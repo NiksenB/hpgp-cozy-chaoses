@@ -11,7 +11,6 @@ public enum ExecutionMode
 public class ConfigAuthoring : MonoBehaviour
 {
     public GameObject planePrefab;
-    public GameObject planeNoGravityPrefab;
     public GameObject airportPrefab;
     public GameObject planetPrefab;
     public GameObject explosionPrefab;
@@ -26,7 +25,6 @@ public class ConfigAuthoring : MonoBehaviour
                 PlanetPrefab = GetEntity(authoring.planetPrefab, TransformUsageFlags.Dynamic),
                 AirportPrefab = GetEntity(authoring.airportPrefab, TransformUsageFlags.Dynamic),
                 PlanePrefab = GetEntity(authoring.planePrefab, TransformUsageFlags.Dynamic),
-                PlaneNoGravityPrefab = GetEntity(authoring.planeNoGravityPrefab, TransformUsageFlags.Dynamic),
                 ExplosionPrefab = GetEntity(authoring.explosionPrefab, TransformUsageFlags.Dynamic)
             });
         }
@@ -36,7 +34,6 @@ public class ConfigAuthoring : MonoBehaviour
 public struct PrefabConfigComponent : IComponentData
 {
     public Entity PlanePrefab;
-    public Entity PlaneNoGravityPrefab;
     public Entity AirportPrefab;
     public Entity PlanetPrefab;
     public Entity ExplosionPrefab;
@@ -63,8 +60,6 @@ public struct ConfigComponent : IComponentData
     public float PlaneResponseSpeed; // How quickly to correct orientation
     public float PlaneForwardWeight; // Weight for forward alignment
     public float PlaneUpWeight; // Weight for up alignment
-
-    public Entity PlaneNoGravityPrefab;
     
     public Entity AirportPrefab;
     public int AirportCount;

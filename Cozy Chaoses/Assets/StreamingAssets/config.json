@@ -1,20 +1,20 @@
 {
-  "executionMode": 1,
-  "maxPlaneCount": 1000,
+  "executionMode": 2,
+  "maxPlaneCount": 10000,
   "enableDebugMode": false,
   "enableDespawnOnCollision": true,
-  "enableExplosionsOnCollision": false,
+  "enableExplosionsOnCollision": true,
   "enablePlaneStabilization": true,
   "nextPlaneSpawnTimeLower": 4.0,
   "nextPlaneSpawnTimeUpper": 4.0,
-  "airportCount": 500,
-  "planetRadius": 1000.0,
-  "planeSpeed": 5.0,
+  "airportCount": 1000,
+  "planetRadius": 2000.0,
+  "planeSpeed": 7.0,
   "planeRotationSpeed": 6.0,
   "planeDamping": 7.0,
   "planeMaxAngularSpeed": 6.0,
   "planeResponseSpeed": 8.0,
   "planeForwardWeight": 1.0,
-  "planeUpWeight": 0.5
+  "planeUpWeight": 0.5,
   "gravityAcceleration": 9.81
 }
